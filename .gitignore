@@ -1,0 +1,26 @@
+# Local secrets (keep the configuration template)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environments, caches, and local data
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.sqlite3
+*.sqlite3-*
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local tooling and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.log
