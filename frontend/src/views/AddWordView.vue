@@ -21,6 +21,7 @@ const genError = ref("");
 function emptyPayload(word = ""): NewWordPayload {
   return {
     word,
+    pronunciation: "",
     definition: "",
     examples: [],
     usage_notes: "",

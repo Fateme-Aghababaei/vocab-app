@@ -34,6 +34,7 @@ class Word(models.Model):
     word = models.CharField(max_length=100)
 
     # --- LLM-generated (user-editable) learning content ---
+    pronunciation = models.CharField(max_length=200, blank=True, default="")
     definition = models.TextField(blank=True)
     examples = models.JSONField(default=list, blank=True)  # list[str]
     usage_notes = models.TextField(blank=True)

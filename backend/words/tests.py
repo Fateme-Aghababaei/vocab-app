@@ -82,3 +82,21 @@ class GeminiServiceTests(SimpleTestCase):
         generate_word_info("hello")
         self.assertEqual(post.call_args.kwargs["json"]["generationConfig"]["thinkingConfig"],
                          {"thinkingLevel": "minimal"})
+
+    @patch("words.gemini_service.requests.post")
+    def test_pronunciation_is_preserved(self, post):
+        post.return_value = self.success({"definition": "A greeting", "pronunciation": "/həˈloʊ/"})
+        self.assertEqual(generate_word_info("hello")["pronunciation"], "/həˈloʊ/")
+
+    @patch("words.gemini_service.requests.post")
+    def test_missing_pronunciation_is_optional(self, post):
+        post.return_value = self.success()
+        self.assertEqual(generate_word_info("hello")["pronunciation"], "")
+
+    @patch("words.gemini_service.requests.post")
+    def test_invalid_pronunciation_is_rejected(self, post):
+        for value in [None, [], 123, "a" * 201]:
+            with self.subTest(value=value):
+                post.return_value = self.success({"definition": "A greeting", "pronunciation": value})
+                with self.assertRaisesRegex(GeminiError, "pronunciation"):
+                    generate_word_info("hello")

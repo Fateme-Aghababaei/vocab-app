@@ -11,6 +11,7 @@ class WordSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "word",
+            "pronunciation",
             "definition",
             "examples",
             "usage_notes",

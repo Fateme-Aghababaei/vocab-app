@@ -1,6 +1,6 @@
 """
 Thin wrapper around the Gemini Flash API used to auto-generate learning
-content for a new word: definition, examples, usage notes, collocations,
+content for a new word: pronunciation, definition, examples, usage notes, collocations,
 difficulty, and categories.
 """
 import json
@@ -33,6 +33,9 @@ self-study learner. A learner just saved the word/phrase: "{word}"
 Return ONLY a single JSON object (no markdown fences, no commentary) with
 exactly these keys:
 
+- "pronunciation": a US English IPA transcripteion enclosed in slashes, matching
+  the meaning and part of speech in the definition (e.g. /həˈloʊ/). For phrass,
+  transcribe the whole phrase. Use an empty string if unsure. Maximum 200 characters.
 - "definition": a single clear, learner-friendly English definition (one or
   two sentences, plain language, no jargon).
 - "examples": an array of 1-2 natural example sentences that show the word
@@ -150,8 +153,13 @@ def generate_word_info(word: str) -> dict:
     if parsed.get("difficulty", "intermediate") not in ("beginner", "intermediate", "advanced"):
         raise GeminiError("Gemini returned an invalid difficulty. Please try again.")
 
+    pronunciation = parsed.get("pronunciation", "")
+    if not isinstance(pronunciation, str) or len(pronunciation) > 200:
+        raise GeminiError("Gemini returned invalid pronunciation. Please try again.")
+
     return {
         "word": word,
+        "pronunciation": pronunciation.strip(),
         "definition": parsed.get("definition", ""),
         "examples": parsed.get("examples", []) or [],
         "usage_notes": parsed.get("usage_notes", ""),

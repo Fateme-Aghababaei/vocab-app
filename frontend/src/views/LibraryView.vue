@@ -51,6 +51,7 @@ onMounted(async () => {
 const editing = ref<Word | null>(null);
 const editForm = reactive<NewWordPayload>({
   word: "",
+  pronunciation: "",
   definition: "",
   examples: [],
   usage_notes: "",
@@ -64,6 +65,7 @@ function openEdit(word: Word) {
   editing.value = word;
   Object.assign(editForm, {
     word: word.word,
+    pronunciation: word.pronunciation ?? "",
     definition: word.definition,
     examples: [...word.examples],
     usage_notes: word.usage_notes,
@@ -177,7 +179,10 @@ const resultCountLabel = computed(() => {
             class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"
             title="Due for review"
           ></span>
-          <span class="font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
+          <div class="min-w-0">
+            <span class="block font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
+            <span v-if="w.pronunciation" class="block text-sm text-stone-500 break-words" title="US English IPA">{{ w.pronunciation }}</span>
+          </div>
         </div>
         <p class="text-sm text-stone-500 line-clamp-2 flex-1 min-w-0">{{ w.definition }}</p>
         <div class="flex items-center gap-2 flex-wrap shrink-0">

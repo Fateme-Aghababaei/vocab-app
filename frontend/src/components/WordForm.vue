@@ -45,6 +45,24 @@ onMounted(() => {
     </div>
 
     <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1.5" for="pronunciation">
+        Pronunciation (US English IPA)
+      </label>
+      <InputText
+        id="pronunciation"
+        v-model="form.pronunciation"
+        class="w-full"
+        placeholder="e.g. /rɪˈzɪliənt/"
+        :maxlength="200"
+        :spellcheck="false"
+        aria-describedby="pronunciation-help"
+      />
+      <p id="pronunciation-help" class="text-xs text-stone-400 mt-1.5">
+        Optional. Phonetic symbols show how the word sounds. You can edit the generated pronunciation.
+      </p>
+    </div>
+
+    <div>
       <label class="block text-sm font-medium text-stone-700 mb-1.5" for="definition"
         >Definition</label
       >
