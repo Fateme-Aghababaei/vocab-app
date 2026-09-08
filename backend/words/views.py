@@ -1,4 +1,5 @@
 import django_filters
+from accounts.languages import study_language
 from django.utils import timezone
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -41,10 +42,10 @@ class WordViewSet(viewsets.ModelViewSet):
     search_fields = ["word", "definition"]
 
     def get_queryset(self):
-        return Word.objects.filter(user=self.request.user)
+        return Word.objects.filter(user=self.request.user, language=study_language(self.request))
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user, language=study_language(self.request))
 
     @action(detail=False, methods=["post"], url_path="generate")
     def generate(self, request):
@@ -54,7 +55,7 @@ class WordViewSet(viewsets.ModelViewSet):
         word = serializer.validated_data["word"].strip()
 
         try:
-            info = generate_word_info(word)
+            info = generate_word_info(word, study_language(request))
         except GeminiError as exc:
             return Response({"detail": str(exc)}, status=exc.status_code)
 
@@ -101,12 +102,12 @@ class WordViewSet(viewsets.ModelViewSet):
 class StatsView(APIView):
     def get(self, request):
         today = timezone.localdate()
-        words = Word.objects.filter(user=request.user)
+        words = Word.objects.filter(user=request.user, language=study_language(request))
         total = words.count()
         due_today = words.filter(next_review_date__lte=today).count()
         new_words = words.filter(repetitions=0).count()
         reviewed_today = ReviewLog.objects.filter(
-            word__user=request.user, reviewed_at__date=today
+            word__in=words, reviewed_at__date=today
         ).count()
         learned = words.filter(repetitions__gte=1).count()
 

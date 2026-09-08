@@ -10,6 +10,7 @@ import time
 import requests
 from django.conf import settings
 from .models import SUGGESTED_CATEGORIES
+from accounts.languages import LANGUAGES
 
 GEMINI_ENDPOINT = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -25,16 +26,20 @@ class GeminiError(Exception):
         self.status_code = status_code
 
 
-def _build_prompt(word: str) -> str:
+def _build_prompt(word: str, language: str = "en") -> str:
+    language_name = LANGUAGES[language]
+    pronunciation_variant = "US English" if language == "en" else f"standard {language_name}"
     categories_hint = ", ".join(SUGGESTED_CATEGORIES)
-    return f"""You are an assistant inside an English vocabulary flashcard app for a
-self-study learner. A learner just saved the word/phrase: "{word}"
+    return f"""You are an assistant inside a {language_name} vocabulary flashcard app for a
+self-study learner. Write definitions, usage notes, and category names in English. Write examples and
+collocations in {language_name}. Interpret the word only as {language_name}.
+A learner just saved the word/phrase: "{word}"
 
 Return ONLY a single JSON object (no markdown fences, no commentary) with
 exactly these keys:
 
-- "pronunciation": a US English IPA transcripteion enclosed in slashes, matching
-  the meaning and part of speech in the definition (e.g. /həˈloʊ/). For phrass,
+- "pronunciation": a {pronunciation_variant} IPA transcription enclosed in slashes,
+  matching the meaning and part of speech in the definition. For phrases,
   transcribe the whole phrase. Use an empty string if unsure. Maximum 200 characters.
 - "definition": a single clear, learner-friendly English definition (one or
   two sentences, plain language, no jargon).
@@ -47,7 +52,7 @@ exactly these keys:
 - "collocations": an array of 3-6 short common collocations or set phrases
   that use this word.
 - "difficulty": one of "beginner", "intermediate", "advanced" reflecting how
-  hard this word is for an English learner.
+  hard this word is for a learner of {language_name}.
 - "categories": an array of 1-3 practical categories this word is most
   useful for, preferably chosen from this list when a good fit exists:
   {categories_hint}. You may introduce a different short category name if
@@ -56,7 +61,7 @@ exactly these keys:
 Respond with raw JSON only."""
 
 
-def generate_word_info(word: str) -> dict:
+def generate_word_info(word: str, language: str = "en") -> dict:
     if not settings.GEMINI_API_KEY:
         raise GeminiError(
             "GEMINI_API_KEY is not configured on the backend. Add it to backend/.env."
@@ -64,7 +69,7 @@ def generate_word_info(word: str) -> dict:
 
     url = GEMINI_ENDPOINT.format(model=settings.GEMINI_MODEL)
     payload = {
-        "contents": [{"parts": [{"text": _build_prompt(word)}]}],
+        "contents": [{"parts": [{"text": _build_prompt(word, language)}]}],
         "generationConfig": {
             "temperature": 0.4,
             "responseMimeType": "application/json",

@@ -2,6 +2,7 @@ export type Difficulty = "beginner" | "intermediate" | "advanced";
 
 export interface Word {
   id: number;
+  language: string;
   word: string;
   pronunciation: string;
   definition: string;
@@ -35,6 +36,7 @@ export interface GeneratedWordInfo {
 export type NewWordPayload = Omit<
   Word,
   | "id"
+  | "language"
   | "repetitions"
   | "ease_factor"
   | "interval_days"
@@ -59,6 +61,8 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  languages: string[];
+  active_language: string;
 }
 
 export interface AuthResponse {
@@ -73,4 +77,9 @@ export interface Stats {
   reviewed_today: number;
   learned: number;
   by_difficulty: Record<Difficulty, number>;
+}
+
+export interface StudyLanguage {
+  code: string;
+  name: string;
 }

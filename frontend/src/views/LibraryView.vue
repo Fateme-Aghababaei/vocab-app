@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputText from "primevue/inputtext";
@@ -42,6 +42,7 @@ watch(search, () => {
   debounceHandle = setTimeout(refresh, 300);
 });
 watch([categoryFilter, difficultyFilter, dueOnly], refresh);
+onBeforeUnmount(() => clearTimeout(debounceHandle));
 
 onMounted(async () => {
   await Promise.all([refresh(), store.fetchCategories()]);
@@ -180,8 +181,8 @@ const resultCountLabel = computed(() => {
             title="Due for review"
           ></span>
           <div class="min-w-0">
-            <span class="block font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
-            <span v-if="w.pronunciation" class="block text-sm text-stone-500 break-words" title="US English IPA">{{ w.pronunciation }}</span>
+            <span dir="auto" class="block font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
+            <span v-if="w.pronunciation" class="block text-sm text-stone-500 break-words" title="Pronunciation (IPA)">{{ w.pronunciation }}</span>
           </div>
         </div>
         <p class="text-sm text-stone-500 line-clamp-2 flex-1 min-w-0">{{ w.definition }}</p>

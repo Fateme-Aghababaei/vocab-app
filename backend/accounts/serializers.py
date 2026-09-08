@@ -2,20 +2,34 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from django.db import transaction
+from .models import StudyProfile
+from .languages import LANGUAGES
 
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    languages = serializers.SerializerMethodField()
+    active_language = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "email", "name"]
+        fields = ["id", "email", "name", "languages", "active_language"]
+
+    def get_languages(self, obj):
+        profile, _ = StudyProfile.objects.get_or_create(user=obj)
+        return profile.languages
+
+    def get_active_language(self, obj):
+        profile, _ = StudyProfile.objects.get_or_create(user=obj)
+        return profile.active_language
 
     def get_name(self, obj):
         return obj.first_name or obj.email.split("@")[0]
 
 
 class RegisterSerializer(serializers.Serializer):
+    language = serializers.ChoiceField(choices=LANGUAGES, default="en")
     email = serializers.EmailField()
     name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     password = serializers.CharField(write_only=True)
@@ -30,6 +44,7 @@ class RegisterSerializer(serializers.Serializer):
         validate_password(value)
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
         email = validated_data["email"]
         user = User.objects.create_user(
@@ -38,6 +53,8 @@ class RegisterSerializer(serializers.Serializer):
             first_name=validated_data.get("name", "").strip(),
             password=validated_data["password"],
         )
+        language = validated_data["language"]
+        StudyProfile.objects.create(user=user, languages=[language], active_language=language)
         return user
 
 
@@ -54,3 +71,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("This account is disabled.")
         attrs["user"] = user
         return attrs
+
+
+class StudyLanguageSerializer(serializers.Serializer):
+    language = serializers.ChoiceField(choices=LANGUAGES)

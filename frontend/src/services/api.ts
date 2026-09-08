@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   AuthResponse,
+  StudyLanguage,
   GeneratedWordInfo,
   NewWordPayload,
   ReviewQuality,
@@ -10,12 +11,19 @@ import type {
 } from "@/types";
 import { clearToken, getToken } from "@/services/authStorage";
 
+let studyLanguage = "en";
+
+export function setStudyLanguage(language: string) {
+  studyLanguage = language;
+}
+
 const client = axios.create({
   baseURL: "/api",
   headers: { "Content-Type": "application/json" },
 });
 
 client.interceptors.request.use((config) => {
+  config.headers["X-Study-Language"] = studyLanguage;
   const token = getToken();
   if (token) {
     config.headers.Authorization = `Token ${token}`;
@@ -55,8 +63,18 @@ function toParams(filters: WordFilters = {}) {
 }
 
 export const api = {
-  async register(email: string, password: string, name: string): Promise<AuthResponse> {
-    const { data } = await client.post("/auth/register/", { email, password, name });
+  async getLanguages(): Promise<StudyLanguage[]> {
+    const { data } = await client.get("/auth/languages/");
+    return data;
+  },
+
+  async selectLanguage(language: string): Promise<User> {
+    const { data } = await client.patch("/auth/me/", { language });
+    return data;
+  },
+
+  async register(email: string, password: string, name: string, language: string): Promise<AuthResponse> {
+    const { data } = await client.post("/auth/register/", { email, password, name, language });
     return data;
   },
 
