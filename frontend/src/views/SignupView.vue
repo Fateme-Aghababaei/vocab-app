@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import { useAuthStore } from "@/stores/auth";
-import { apiErrorMessage } from "@/services/api";
+import type { StudyLanguage } from "@/types";
+import { api, apiErrorMessage } from "@/services/api";
 
 const router = useRouter();
 const auth = useAuthStore();
+
+const language = ref("en");
+const languages = ref<StudyLanguage[]>([]);
+async function loadLanguages() {
+  try {
+    languages.value = await api.getLanguages();
+    error.value = "";
+  } catch (e) {
+    error.value = apiErrorMessage(e);
+  }
+}
+onMounted(loadLanguages);
 
 const name = ref("");
 const email = ref("");
@@ -21,7 +34,7 @@ const passwordsMismatch = computed(
 );
 
 const canSubmit = computed(
-  () => !!email.value && password.value.length >= 8 && !passwordsMismatch.value
+  () => languages.value.length > 0 && !!email.value && password.value.length >= 8 && !passwordsMismatch.value
 );
 
 async function handleSubmit() {
@@ -29,7 +42,7 @@ async function handleSubmit() {
   loading.value = true;
   error.value = "";
   try {
-    await auth.register(email.value, password.value, name.value);
+    await auth.register(email.value, password.value, name.value, language.value);
     router.push("/");
   } catch (e) {
     error.value = apiErrorMessage(e);
@@ -65,6 +78,15 @@ async function handleSubmit() {
             >Name <span class="text-stone-400 font-normal">(optional)</span></label
           >
           <InputText id="name" v-model="name" class="w-full" autocomplete="name" placeholder="Alex" />
+        </div>
+
+        <div>
+          <label for="study-language" class="block text-sm font-medium text-stone-700 mb-1.5">I want to learn</label>
+          <select id="study-language" v-model="language" class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2">
+            <option v-for="item in languages" :key="item.code" :value="item.code">{{ item.name }}</option>
+          </select>
+          <p class="text-xs text-stone-400 mt-1.5">You can add more languages later.</p>
+          <button v-if="!languages.length" type="button" class="text-sm text-pink-600 mt-2" @click="loadLanguages">Reload languages</button>
         </div>
 
         <div>

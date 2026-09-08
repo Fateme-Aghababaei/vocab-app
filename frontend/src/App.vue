@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 import InstallApp from "@/components/InstallApp.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -23,23 +24,18 @@ const isActive = (name: string) => route.name === name;
 const dueBadge = computed(() => store.dueCount);
 const isPublicRoute = computed(() => !!route.meta.public);
 
-// Fetch (and re-fetch) the due count whenever we have an authenticated user
-// - covers both first load and the moment a login/signup completes.
 watch(
-  () => auth.isAuthenticated,
-  (authed) => {
-    if (authed) store.fetchDueWords();
+  () => [auth.user?.id, auth.user?.active_language],
+  () => {
+    store.clearStudyState();
+    if (auth.isAuthenticated) store.fetchDueWords();
   },
   { immediate: true }
 );
 
-onMounted(() => {
-  if (auth.isAuthenticated) store.fetchDueWords();
-});
-
 async function handleLogout() {
   await auth.logout();
-  store.$reset();
+  store.clearStudyState();
   router.push("/login");
 }
 </script>
@@ -141,7 +137,8 @@ async function handleLogout() {
       <main class="flex-1 min-w-0">
         <div class="app-content max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-16 md:pt-6 pb-24 md:pb-10">
           <InstallApp />
-          <router-view />
+          <LanguageSwitcher />
+          <router-view :key="`${auth.user?.id}:${auth.user?.active_language}`" />
         </div>
       </main>
     </div>

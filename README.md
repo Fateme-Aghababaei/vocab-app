@@ -163,3 +163,23 @@ older app windows close, avoiding a forced refresh during word editing. When
 changing `offline.html`, bump the cache version in `public/sw.js`.
 
 Icon assets can be regenerated with `python3 frontend/scripts/generate-icons.py`.
+
+
+### Study languages
+
+Choose an initial study language at signup. The **I'm learning** selector above
+each page lets you switch between your languages or use **Add language** to add
+another one. Preferences are saved to your account. Save drafts and edits before
+switching languages.
+
+Each language has its own word library, review queue, categories, and statistics.
+The same spelling can be saved once in each language. Existing words belong to
+English, with their pronunciation and review history preserved. AI-generated
+examples, collocations, and IPA follow the study language; the interface,
+definitions, and usage explanations remain in English.
+
+Apply backend migrations when updating: `python manage.py migrate` from `backend`
+with the virtual environment activated. Supported languages are listed in
+`backend/accounts/languages.py`. The API accepts `X-Study-Language` for vocabulary
+requests, validates it against the user's languages, and otherwise uses the
+account's saved active language.

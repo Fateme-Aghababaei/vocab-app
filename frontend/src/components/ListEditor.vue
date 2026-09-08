@@ -37,6 +37,7 @@ function remove(i: number) {
       <Textarea
         v-if="multiline"
         :model-value="item"
+        dir="auto"
         rows="2"
         auto-resize
         class="w-full"
@@ -46,6 +47,7 @@ function remove(i: number) {
       <InputText
         v-else
         :model-value="item"
+        dir="auto"
         class="w-full"
         :placeholder="placeholder"
         @update:model-value="(v) => update(i, String(v ?? ''))"

@@ -41,16 +41,17 @@ onMounted(() => {
   <div class="flex flex-col gap-6">
     <div>
       <label class="block text-sm font-medium text-stone-700 mb-1.5" for="word">Word</label>
-      <InputText id="word" v-model="form.word" class="w-full text-lg" placeholder="e.g. resilient" />
+      <InputText id="word" v-model="form.word" dir="auto" class="w-full text-lg" placeholder="e.g. resilient" />
     </div>
 
     <div>
       <label class="block text-sm font-medium text-stone-700 mb-1.5" for="pronunciation">
-        Pronunciation (US English IPA)
+        Pronunciation (IPA)
       </label>
       <InputText
         id="pronunciation"
         v-model="form.pronunciation"
+        dir="ltr"
         class="w-full"
         placeholder="e.g. /rɪˈzɪliənt/"
         :maxlength="200"

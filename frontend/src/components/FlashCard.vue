@@ -41,10 +41,10 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             <DifficultyBadge :difficulty="word.difficulty" />
           </div>
           <span class="text-xs font-medium text-stone-400 mb-3">Do you remember this word?</span>
-          <h2 class="font-display text-4xl sm:text-5xl font-semibold text-stone-900 mb-6">
+          <h2 dir="auto" class="font-display text-4xl sm:text-5xl font-semibold text-stone-900 mb-6">
             {{ word.word }}
           </h2>
-          <p v-if="word.pronunciation" class="text-lg text-stone-500 mb-6 break-words" title="US English IPA">{{ word.pronunciation }}</p>
+          <p v-if="word.pronunciation" class="text-lg text-stone-500 mb-6 break-words" title="Pronunciation (IPA)">{{ word.pronunciation }}</p>
           <button
             type="button"
             class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
@@ -59,13 +59,13 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
           class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 bg-white border border-stone-200 shadow-soft flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
         >
           <div class="flex items-start justify-between gap-3 mb-3">
-            <h2 class="font-display text-2xl sm:text-3xl font-semibold text-stone-900">
+            <h2 dir="auto" class="font-display text-2xl sm:text-3xl font-semibold text-stone-900">
               {{ word.word }}
             </h2>
             <DifficultyBadge :difficulty="word.difficulty" />
           </div>
 
-          <p v-if="word.pronunciation" class="text-sm text-stone-500 mb-3 break-words" title="US English IPA">{{ word.pronunciation }}</p>
+          <p v-if="word.pronunciation" class="text-sm text-stone-500 mb-3 break-words" title="Pronunciation (IPA)">{{ word.pronunciation }}</p>
           <p class="text-stone-700 leading-relaxed mb-4">{{ word.definition }}</p>
 
           <div v-if="word.examples.length" class="mb-4">
@@ -74,6 +74,7 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             </h3>
             <ul class="space-y-1.5">
               <li
+                dir="auto"
                 v-for="(ex, i) in word.examples"
                 :key="i"
                 class="text-sm text-stone-600 italic leading-relaxed"
@@ -96,6 +97,7 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             </h3>
             <div class="flex flex-wrap gap-1.5">
               <span
+                dir="auto"
                 v-for="(c, i) in word.collocations"
                 :key="i"
                 class="rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-1"

@@ -32,6 +32,7 @@ class Word(models.Model):
         settings.AUTH_USER_MODEL, related_name="words", on_delete=models.CASCADE
     )
     word = models.CharField(max_length=100)
+    language = models.CharField(max_length=10, default="en")
 
     # --- LLM-generated (user-editable) learning content ---
     pronunciation = models.CharField(max_length=200, blank=True, default="")
@@ -57,7 +58,7 @@ class Word(models.Model):
     class Meta:
         ordering = ["-created_at"]
         constraints = [
-            models.UniqueConstraint(fields=["user", "word"], name="unique_word_per_user"),
+            models.UniqueConstraint(fields=["user", "language", "word"], name="unique_word_per_user_language"),
         ]
 
     def __str__(self):

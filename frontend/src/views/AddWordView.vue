@@ -97,6 +97,7 @@ function startOver() {
         <InputText
           id="new-word"
           v-model="wordInput"
+          dir="auto"
           placeholder="e.g. meticulous"
           class="w-full text-lg"
           @keyup.enter="handleGenerate"

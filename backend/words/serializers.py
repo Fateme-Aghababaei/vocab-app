@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Word, ReviewLog
+from accounts.languages import study_language
 
 
 class WordSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class WordSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "word",
+            "language",
             "pronunciation",
             "definition",
             "examples",
@@ -29,6 +31,7 @@ class WordSerializer(serializers.ModelSerializer):
             "is_new",
         ]
         read_only_fields = [
+            "language",
             "repetitions",
             "ease_factor",
             "interval_days",
@@ -37,6 +40,17 @@ class WordSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        language = study_language(request)
+        word = attrs.get("word", self.instance.word if self.instance else "")
+        matches = Word.objects.filter(user=request.user, language=language, word=word)
+        if self.instance:
+            matches = matches.exclude(pk=self.instance.pk)
+        if matches.exists():
+            raise serializers.ValidationError({"word": "You already saved this word in this language."})
+        return attrs
 
 
 class GenerateWordRequestSerializer(serializers.Serializer):

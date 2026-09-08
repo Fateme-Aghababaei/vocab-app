@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { api } from "@/services/api";
+import { api, setStudyLanguage } from "@/services/api";
 import { clearToken, getToken, setToken } from "@/services/authStorage";
 import type { User } from "@/types";
 
@@ -25,6 +25,7 @@ export const useAuthStore = defineStore("auth", {
       }
       try {
         this.user = await api.me();
+        setStudyLanguage(this.user.active_language);
       } catch {
         clearToken();
         this.user = null;
@@ -36,12 +37,20 @@ export const useAuthStore = defineStore("auth", {
     async login(email: string, password: string) {
       const { token, user } = await api.login(email, password);
       setToken(token);
+      setStudyLanguage(user.active_language);
       this.user = user;
     },
 
-    async register(email: string, password: string, name: string) {
-      const { token, user } = await api.register(email, password, name);
+    async register(email: string, password: string, name: string, language: string) {
+      const { token, user } = await api.register(email, password, name, language);
       setToken(token);
+      setStudyLanguage(user.active_language);
+      this.user = user;
+    },
+
+    async selectLanguage(language: string) {
+      const user = await api.selectLanguage(language);
+      setStudyLanguage(user.active_language);
       this.user = user;
     },
 

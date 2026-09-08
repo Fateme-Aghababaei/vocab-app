@@ -4,7 +4,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from .serializers import LoginSerializer, RegisterSerializer, UserSerializer, StudyLanguageSerializer
+from .models import StudyProfile
+from .languages import LANGUAGES
+from django.db import transaction
 
 
 class RegisterView(APIView):
@@ -45,3 +48,23 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data)
+
+
+    def patch(self, request):
+        serializer = StudyLanguageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        language = serializer.validated_data["language"]
+        with transaction.atomic():
+            profile, _ = StudyProfile.objects.select_for_update().get_or_create(user=request.user)
+            if language not in profile.languages:
+                profile.languages = [*profile.languages, language]
+            profile.active_language = language
+            profile.save(update_fields=["languages", "active_language"])
+        return Response(UserSerializer(request.user).data)
+
+
+class LanguagesView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response([{"code": code, "name": name} for code, name in LANGUAGES.items()])
