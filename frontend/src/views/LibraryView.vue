@@ -8,6 +8,7 @@ import Dialog from "primevue/dialog";
 import DifficultyBadge from "@/components/DifficultyBadge.vue";
 import CategoryChip from "@/components/CategoryChip.vue";
 import WordForm from "@/components/WordForm.vue";
+import SpeakButton from "@/components/SpeakButton.vue";
 import { useWordsStore } from "@/stores/words";
 import { apiErrorMessage } from "@/services/api";
 import type { Difficulty, NewWordPayload, Word } from "@/types";
@@ -171,13 +172,14 @@ const resultCountLabel = computed(() => {
         class="rounded-xl2 bg-white border border-stone-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-pink-200 transition-colors cursor-pointer"
         @click="openEdit(w)"
       >
-        <div class="flex items-center gap-2 sm:w-40 shrink-0">
+        <div class="flex items-center gap-2 sm:w-48 shrink-0">
           <span
             v-if="w.is_due"
             class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"
             title="Due for review"
           ></span>
           <span class="font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
+          <SpeakButton :text="w.word" size="sm" />
         </div>
         <p class="text-sm text-stone-500 line-clamp-2 flex-1 min-w-0">{{ w.definition }}</p>
         <div class="flex items-center gap-2 flex-wrap shrink-0">
@@ -186,50 +188,4 @@ const resultCountLabel = computed(() => {
         </div>
         <button
           type="button"
-          class="text-stone-300 hover:text-pink-600 transition-colors shrink-0"
-          aria-label="Delete word"
-          @click.stop="confirmDelete(w)"
-        >
-          <i class="pi pi-trash"></i>
-        </button>
-      </div>
-    </section>
-
-    <div v-else class="rounded-xl2 bg-white border border-stone-200 px-8 py-16 text-center flex flex-col items-center gap-3">
-      <p class="font-display text-xl font-semibold text-stone-900">No words match yet</p>
-      <p class="text-stone-500 text-sm max-w-sm">
-        Try clearing your filters, or
-        <router-link to="/add" class="text-pink-600 font-medium">add a new word</router-link>.
-      </p>
-    </div>
-
-    <!-- Edit dialog -->
-    <Dialog
-      :visible="!!editing"
-      modal
-      dismissable-mask
-      :header="editing?.word ?? ''"
-      class="w-full max-w-2xl mx-4"
-      @update:visible="(v) => !v && (editing = null)"
-    >
-      <WordForm v-if="editing" :model-value="editForm" @update:model-value="updateEditForm" />
-      <template #footer>
-        <button
-          type="button"
-          class="rounded-full bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
-          @click="editing = null"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
-          :disabled="savingEdit"
-          @click="saveEdit"
-        >
-          Save changes
-        </button>
-      </template>
-    </Dialog>
-  </div>
-</template>
+          class="text-stone-300 hov
