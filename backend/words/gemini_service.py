@@ -1,7 +1,7 @@
 """
-Thin wrapper around the Gemini Flash API used to auto-generate learning
-content for a new word: definition, examples, usage notes, collocations,
-difficulty, and categories.
+Resilient Gemini Flash API wrapper with Key Rotation and Model Fallback.
+Handles 429 (Rate-limits/Quota) by rotating API keys and 503/500/504 (Outages)
+by switching fallback models.
 """
 import json
 import re
@@ -15,8 +15,10 @@ GEMINI_ENDPOINT = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 )
 
-
 logger = logging.getLogger(__name__)
+
+# شاخص سراسری برای توزیع درخواست‌ها بین کلیدها (Round-Robin)
+_CURRENT_KEY_INDEX = 0
 
 
 class GeminiError(Exception):
@@ -53,87 +55,25 @@ exactly these keys:
 Respond with raw JSON only."""
 
 
-def generate_word_info(word: str) -> dict:
-    if not settings.GEMINI_API_KEY:
-        raise GeminiError(
-            "GEMINI_API_KEY is not configured on the backend. Add it to backend/.env."
-        )
+def _get_api_keys() -> list[str]:
+    keys = getattr(settings, "GEMINI_API_KEYS", [])
+    if not keys and getattr(settings, "GEMINI_API_KEY", ""):
+        keys = [settings.GEMINI_API_KEY]
+    return keys
 
-    url = GEMINI_ENDPOINT.format(model=settings.GEMINI_MODEL)
-    payload = {
-        "contents": [{"parts": [{"text": _build_prompt(word)}]}],
-        "generationConfig": {
-            "temperature": 0.4,
-            "responseMimeType": "application/json",
-        },
-    }
 
-    # Vocabulary drafts do not need the model's default reasoning effort.
-    # Keep this model-specific: thinking options differ between model versions.
-    if settings.GEMINI_MODEL in ("gemini-3.6-flash", "gemini-3.5-flash"):
-        payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": "minimal"}
+def _get_models() -> list[str]:
+    models = getattr(settings, "GEMINI_MODELS", [])
+    if not models and getattr(settings, "GEMINI_MODEL", ""):
+        models = [settings.GEMINI_MODEL]
+    return models or ["gemini-2.0-flash", "gemini-1.5-flash"]
 
-    # Retry only temporary server failures, once. Retrying quota errors or
-    # timeouts immediately can waste quota and make the user wait much longer.
-    started = time.monotonic()
-    for attempt in range(2):
-        try:
-            response = requests.post(
-                url,
-                headers={
-                    "x-goog-api-key": settings.GEMINI_API_KEY,
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-                timeout=(5, settings.GEMINI_READ_TIMEOUT),
-            )
-        except requests.Timeout as exc:
-            logger.warning("Gemini timed out model=%s elapsed=%.1fs",
-                           settings.GEMINI_MODEL, time.monotonic() - started)
-            raise GeminiError("Gemini took too long to respond. Please try again.", 504) from exc
-        except requests.RequestException as exc:
-            # Do not expose request details, proxy credentials, or API keys.
-            logger.warning("Gemini connection failed model=%s error=%s",
-                           settings.GEMINI_MODEL, type(exc).__name__)
-            raise GeminiError("Could not connect to Gemini. Please try again.", 503) from exc
 
-        logger.info("Gemini model=%s status=%s attempt=%s elapsed=%.1fs",
-                    settings.GEMINI_MODEL, response.status_code, attempt + 1,
-                    time.monotonic() - started)
-        if response.status_code in (500, 502, 503, 504) and attempt == 0:
-            time.sleep(1)
-            continue
-        break
-
-    if not response.ok:
-        logger.warning("Gemini rejected request model=%s status=%s",
-                       settings.GEMINI_MODEL, response.status_code)
-        if response.status_code == 429:
-            raise GeminiError("Gemini's request limit or quota has been reached. Please try later or check your API quota.", 429)
-        if response.status_code in (401, 403):
-            raise GeminiError("Gemini denied access. Check the backend API key and its permissions.")
-        if response.status_code == 404:
-            raise GeminiError("The configured Gemini model is unavailable. Check GEMINI_MODEL in backend/.env.")
-        if response.status_code >= 500:
-            raise GeminiError("Gemini is temporarily unavailable. Please try again.", 503)
-        raise GeminiError("Gemini rejected the request. Check the backend model configuration.")
-
+def _clean_and_parse_json(text: str) -> dict:
+    """پارس کردن امن خروجی JSON مدل و حذف بلوک‌های مارک‌داون احتمالی"""
+    cleaned = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
     try:
-        data = response.json()
-        candidate = data["candidates"][0]
-        if candidate.get("finishReason") not in (None, "STOP"):
-            raise GeminiError("Gemini could not finish generating this word. Please try again.")
-        text = "".join(
-            part["text"] for part in candidate["content"]["parts"]
-            if "text" in part and not part.get("thought")
-        )
-    except (ValueError, KeyError, IndexError, TypeError) as exc:
-        raise GeminiError("Gemini returned an unreadable response. Please try again.") from exc
-
-    text = re.sub(r"^```(json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
-
-    try:
-        parsed = json.loads(text)
+        parsed = json.loads(cleaned)
     except json.JSONDecodeError as exc:
         raise GeminiError("Gemini returned invalid word data. Please try again.") from exc
 
@@ -150,12 +90,125 @@ def generate_word_info(word: str) -> dict:
     if parsed.get("difficulty", "intermediate") not in ("beginner", "intermediate", "advanced"):
         raise GeminiError("Gemini returned an invalid difficulty. Please try again.")
 
-    return {
-        "word": word,
-        "definition": parsed.get("definition", ""),
-        "examples": parsed.get("examples", []) or [],
-        "usage_notes": parsed.get("usage_notes", ""),
-        "collocations": parsed.get("collocations", []) or [],
-        "difficulty": parsed.get("difficulty", "intermediate"),
-        "categories": parsed.get("categories", []) or [],
-    }
+    return parsed
+
+
+def generate_word_info(word: str) -> dict:
+    global _CURRENT_KEY_INDEX
+    keys = _get_api_keys()
+    models = _get_models()
+
+    if not keys:
+        raise GeminiError(
+            "No GEMINI_API_KEYS configured on the backend. Add them to backend/.env."
+        )
+
+    prompt = _build_prompt(word)
+    num_keys = len(keys)
+
+    # اگر کلیدهای چندگانه داریم، از کلید جاری شروع می‌کنیم و در صورت بروز خطا به بعدی‌ها می‌رویم
+    key_indices_to_try = [(_CURRENT_KEY_INDEX + i) % num_keys for i in range(num_keys)]
+
+    last_error_message = "Failed to generate word info."
+    last_status = 502
+
+    # حلقه چرخش: مدل‌ها را به ترتیب اولویت و برای هر مدل کلیدها را تست می‌کنیم
+    for model in models:
+        url = GEMINI_ENDPOINT.format(model=model)
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.4,
+                "responseMimeType": "application/json",
+            },
+        }
+
+        # در مدل‌های فکری اگر نیاز به غیرفعال‌سازی یا مینیمال کردن باشد
+        if "3.5" in model or "3.6" in model:
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": "minimal"}
+
+        for key_idx in key_indices_to_try:
+            current_key = keys[key_idx]
+            started = time.monotonic()
+
+            try:
+                response = requests.post(
+                    url,
+                    headers={
+                        "x-goog-api-key": current_key,
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                    timeout=(5, settings.GEMINI_READ_TIMEOUT),
+                )
+            except requests.Timeout:
+                elapsed = time.monotonic() - started
+                logger.warning("Gemini timed out with model=%s key_idx=%s after %.1fs", model, key_idx, elapsed)
+                last_error_message = "Gemini request timed out. Trying next provider..."
+                last_status = 504
+                continue
+            except requests.RequestException as exc:
+                logger.warning("Gemini connection failed model=%s: %s", model, type(exc).__name__)
+                last_error_message = "Could not connect to Gemini."
+                last_status = 503
+                continue
+
+            # حالت ۱: درخواست موفقیت‌آمیز بود (200 OK)
+            if response.ok:
+                # برای درخواست‌های بعدی از همین کلید یا کلید بعدی استفاده کن
+                _CURRENT_KEY_INDEX = (key_idx + 1) % num_keys
+                try:
+                    data = response.json()
+                    candidate = data["candidates"][0]
+                    if candidate.get("finishReason") not in (None, "STOP"):
+                        raise GeminiError("Gemini stopped before finishing generation.")
+
+                    text = "".join(
+                        part["text"] for part in candidate["content"]["parts"]
+                        if "text" in part and not part.get("thought")
+                    )
+                    parsed = _clean_and_parse_json(text)
+
+                    return {
+                        "word": word,
+                        "definition": parsed.get("definition", ""),
+                        "examples": parsed.get("examples", []) or [],
+                        "usage_notes": parsed.get("usage_notes", ""),
+                        "collocations": parsed.get("collocations", []) or [],
+                        "difficulty": parsed.get("difficulty", "intermediate"),
+                        "categories": parsed.get("categories", []) or [],
+                    }
+                except (ValueError, KeyError, IndexError, TypeError) as exc:
+                    logger.error("Error unpacking Gemini response: %s", exc)
+                    last_error_message = "Gemini returned an unreadable response."
+                    continue
+
+            # حالت ۲: برخورد با خطای سهمیه یا محدودیت نرخ (429)
+            if response.status_code == 429:
+                logger.warning("Gemini quota reached for key_idx=%s on model=%s. Rotating key...", key_idx, model)
+                last_error_message = "API rate limit reached. Retrying with fallback..."
+                last_status = 429
+                continue  # بلافاصله کلید بعدی امتحان می‌شود
+
+            # حالت ۳: خطاهای سرور جمنای یا شلوغی سرویس (500, 502, 503, 504)
+            if response.status_code in (500, 502, 503, 504):
+                logger.warning("Gemini server error %s on model=%s. Switching...", response.status_code, model)
+                last_error_message = "Gemini service is temporarily unavailable."
+                last_status = 503
+                break  # خطای سمت مدل است؛ برو سراغ مدل بعدی!
+
+            # حالت ۴: مدل پیدا نشد (404)
+            if response.status_code == 404:
+                logger.warning("Model %s not found (404). Falling back to next model.", model)
+                break  # مدل اشتباه است یا برداشته شده؛ مدل بعدی را تست کن
+
+            # خطاهای دیگر مثل دسترسی نامعتبر (401, 403)
+            if response.status_code in (401, 403):
+                logger.warning("Key_idx=%s denied access (401/403). Rotating...", key_idx)
+                continue
+
+    # اگر تمام ترکیب‌های کلید و مدل شکست خوردند
+    raise GeminiError(
+        f"All AI services/keys were exhausted: {last_error_message}",
+        status_code=last_status,
+    )

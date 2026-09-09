@@ -103,8 +103,22 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 ).split(",")
 
 # --- Gemini Flash integration -------------------------------------------------
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+# GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
 # Requests uses separate connection and read timeouts (seconds).
-GEMINI_READ_TIMEOUT = float(os.getenv("GEMINI_READ_TIMEOUT", "30"))
+# GEMINI_READ_TIMEOUT = float(os.getenv("GEMINI_READ_TIMEOUT", "30"))
+
+
+# --- Gemini Rotation integration ----------------------------------------------
+_raw_keys = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
+GEMINI_API_KEYS = [k.strip() for k in _raw_keys.split(",") if k.strip()]
+
+_raw_models = os.getenv("GEMINI_MODELS", os.getenv("GEMINI_MODEL", "gemini-2.0-flash,gemini-1.5-flash,gemini-1.5-flash-8b"))
+GEMINI_MODELS = [m.strip() for m in _raw_models.split(",") if m.strip()]
+
+# برای سازگاری با کدهای تست یا دسترسی‌های مستقیم تکی
+GEMINI_API_KEY = GEMINI_API_KEYS[0] if GEMINI_API_KEYS else ""
+GEMINI_MODEL = GEMINI_MODELS[0] if GEMINI_MODELS else "gemini-2.0-flash"
+
+GEMINI_READ_TIMEOUT = float(os.getenv("GEMINI_READ_TIMEOUT", "25"))
