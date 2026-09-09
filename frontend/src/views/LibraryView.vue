@@ -188,4 +188,50 @@ const resultCountLabel = computed(() => {
         </div>
         <button
           type="button"
-          class="text-stone-300 hov
+          class="text-stone-300 hover:text-pink-600 transition-colors shrink-0"
+          aria-label="Delete word"
+          @click.stop="confirmDelete(w)"
+        >
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+    </section>
+
+    <div v-else class="rounded-xl2 bg-white border border-stone-200 px-8 py-16 text-center flex flex-col items-center gap-3">
+      <p class="font-display text-xl font-semibold text-stone-900">No words match yet</p>
+      <p class="text-stone-500 text-sm max-w-sm">
+        Try clearing your filters, or
+        <router-link to="/add" class="text-pink-600 font-medium">add a new word</router-link>.
+      </p>
+    </div>
+
+    <!-- Edit dialog -->
+    <Dialog
+      :visible="!!editing"
+      modal
+      dismissable-mask
+      :header="editing?.word ?? ''"
+      class="w-full max-w-2xl mx-4"
+      @update:visible="(v) => !v && (editing = null)"
+    >
+      <WordForm v-if="editing" :model-value="editForm" @update:model-value="updateEditForm" />
+      <template #footer>
+        <button
+          type="button"
+          class="rounded-full bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
+          @click="editing = null"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
+          :disabled="savingEdit"
+          @click="saveEdit"
+        >
+          Save changes
+        </button>
+      </template>
+    </Dialog>
+  </div>
+</template>
