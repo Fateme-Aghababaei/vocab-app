@@ -5,9 +5,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Word, ReviewLog, SUGGESTED_CATEGORIES
+from .models import Word, ReviewLog, GlobalWord, SUGGESTED_CATEGORIES
 from .serializers import (
     WordSerializer,
+    GlobalWordSerializer,
     GenerateWordRequestSerializer,
     ReviewSubmitSerializer,
 )
@@ -48,17 +49,53 @@ class WordViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="generate")
     def generate(self, request):
-        """Ask Gemini Flash to draft learning content for a word (not saved)."""
         serializer = GenerateWordRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        word = serializer.validated_data["word"].strip()
+        raw_word = serializer.validated_data["word"].strip()
+
+        cached = GlobalWord.objects.filter(word__iexact=raw_word).first()
+        if cached:
+            return Response({
+                "word": cached.word,
+                "definition": cached.definition,
+                "examples": cached.examples,
+                "usage_notes": cached.usage_notes,
+                "collocations": cached.collocations,
+                "difficulty": cached.difficulty,
+                "categories": cached.categories,
+                "source": "database",
+            }, status=status.HTTP_200_OK)
 
         try:
-            info = generate_word_info(word)
+            info = generate_word_info(raw_word)
         except GeminiError as exc:
             return Response({"detail": str(exc)}, status=exc.status_code)
 
+        try:
+            GlobalWord.objects.get_or_create(
+                word=info["word"].lower(),
+                defaults={
+                    "definition": info.get("definition", ""),
+                    "examples": info.get("examples", []),
+                    "usage_notes": info.get("usage_notes", ""),
+                    "collocations": info.get("collocations", []),
+                    "difficulty": info.get("difficulty", "intermediate"),
+                    "categories": info.get("categories", []),
+                }
+            )
+        except Exception:
+            pass
+
+        info["source"] = "ai"
         return Response(info, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="dictionary-search")
+    def dictionary_search(self, request):
+        query = request.query_params.get("q", "").strip()
+        if not query:
+            return Response([])
+        matches = GlobalWord.objects.filter(word__icontains=query)[:10]
+        return Response(GlobalWordSerializer(matches, many=True).data)
 
     @action(detail=False, methods=["get"], url_path="due")
     def due(self, request):

@@ -88,3 +88,23 @@ class ReviewLog(models.Model):
 
     class Meta:
         ordering = ["-reviewed_at"]
+class GlobalWord(models.Model):
+    word = models.CharField(max_length=100, unique=True, db_index=True)
+    definition = models.TextField(blank=True)
+    examples = models.JSONField(default=list, blank=True)
+    usage_notes = models.TextField(blank=True)
+    collocations = models.JSONField(default=list, blank=True)
+    difficulty = models.CharField(
+        max_length=20, choices=Difficulty.choices, default=Difficulty.INTERMEDIATE
+    )
+    categories = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["word"]
+        verbose_name = "Global Word"
+        verbose_name_plural = "Global Words (Dictionary)"
+
+    def __str__(self):
+        return self.word

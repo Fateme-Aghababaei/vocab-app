@@ -1,5 +1,20 @@
 from rest_framework import serializers
-from .models import Word, ReviewLog
+from .models import Word, ReviewLog, GlobalWord
+
+
+class GlobalWordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalWord
+        fields = [
+            "id",
+            "word",
+            "definition",
+            "examples",
+            "usage_notes",
+            "collocations",
+            "difficulty",
+            "categories",
+        ]
 
 
 class WordSerializer(serializers.ModelSerializer):
@@ -36,6 +51,13 @@ class WordSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        word_text = attrs.get("word", "").strip()
+        if not self.instance and Word.objects.filter(user=user, word__iexact=word_text).exists():
+            raise serializers.ValidationError({"word": "This word is already saved in your flashcard list."})
+        return attrs
 
 
 class GenerateWordRequestSerializer(serializers.Serializer):

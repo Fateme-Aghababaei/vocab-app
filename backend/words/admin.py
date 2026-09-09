@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Word, ReviewLog
+from .models import Word, ReviewLog, GlobalWord
+
+
+@admin.register(GlobalWord)
+class GlobalWordAdmin(admin.ModelAdmin):
+    list_display = ("word", "difficulty", "categories", "created_at")
+    search_fields = ("word", "definition")
+    list_filter = ("difficulty",)
 
 
 @admin.register(Word)

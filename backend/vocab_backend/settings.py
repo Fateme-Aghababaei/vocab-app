@@ -9,6 +9,19 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+
+# --- Python 3.14 Hotfix for Django Admin ---
+from django.template import context as _ctx
+
+def _safe_context_copy(self):
+    duplicate = object.__new__(self.__class__)
+    duplicate.__dict__.update(self.__dict__)
+    duplicate.dicts = self.dicts[:]
+    return duplicate
+
+_ctx.BaseContext.__copy__ = _safe_context_copy
+# -------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
