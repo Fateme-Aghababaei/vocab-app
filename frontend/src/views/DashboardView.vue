@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useWordsStore } from "@/stores/words";
 import NotificationBanner from "@/components/NotificationBanner.vue";
 import { useNotifications } from "../composables/useNotifications";
+import RecommendedSection from '@/components/RecommendedSection.vue';
 
 const store = useWordsStore();
 const router = useRouter();
@@ -38,6 +39,7 @@ const recentWords = computed(() => store.words.slice(0, 5));
     </header>
 
     <NotificationBanner />
+    <RecommendedSection class="my-2" />
 
     <!-- Hero: due today -->
     <section

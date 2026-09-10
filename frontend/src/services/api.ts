@@ -122,6 +122,15 @@ export const api = {
     const { data } = await client.get("/stats/");
     return data;
   },
+async getRecommendations(): Promise<any[]> {
+    const { data } = await client.get("/words/recommendations/");
+    return data;
+  },
+
+  async claimRecommendation(id: number): Promise<Word> {
+    const { data } = await client.post("/words/claim/", { id });
+    return data;
+  },
 };
 
 export function apiErrorMessage(err: unknown): string {

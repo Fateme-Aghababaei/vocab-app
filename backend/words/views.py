@@ -47,6 +47,63 @@ class WordViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @action(detail=False, methods=["get"], url_path="recommendations")
+    def recommendations(self, request):
+        from collections import Counter
+        import random
+        user_words_qs = Word.objects.filter(user=request.user)
+        existing_words = set(user_words_qs.values_list("word", flat=True))
+        categories_list = []
+        for cats in user_words_qs.values_list("categories", flat=True):
+            if cats:
+                categories_list.extend(cats)
+
+        top_category = None
+        if categories_list:
+            top_category = Counter(categories_list).most_common(1)[0][0]
+
+        difficulties = list(user_words_qs.values_list("difficulty", flat=True))
+        user_difficulty = Counter(difficulties).most_common(1)[0][0] if difficulties else "intermediate"
+        candidates = GlobalWord.objects.exclude(word__in=existing_words)
+        preferred = candidates.filter(difficulty=user_difficulty)
+        if top_category:
+            preferred = preferred.filter(categories__icontains=top_category)
+
+        results = list(preferred[:15])
+
+        if len(results) < 6:
+            fallback = list(candidates.exclude(id__in=[w.id for w in results])[:15])
+            results.extend(fallback)
+
+        recommended = random.sample(results, min(len(results), 4)) if results else []
+
+        serializer = GlobalWordSerializer(recommended, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"], url_path="claim")
+    def claim_recommendation(self, request):
+        global_word_id = request.data.get("id")
+        global_word = GlobalWord.objects.filter(id=global_word_id).first()
+
+        if not global_word:
+            return Response({"detail": "Word not found in dictionary."}, status=status.HTTP_404_NOT_FOUND)
+
+        if Word.objects.filter(user=request.user, word__iexact=global_word.word).exists():
+            return Response({"detail": "You already have this word."}, status=status.HTTP_400_BAD_REQUEST)
+
+        word = Word.objects.create(
+            user=request.user,
+            word=global_word.word,
+            definition=global_word.definition,
+            examples=global_word.examples,
+            usage_notes=global_word.usage_notes,
+            collocations=global_word.collocations,
+            difficulty=global_word.difficulty,
+            categories=global_word.categories,
+        )
+
+        return Response(WordSerializer(word).data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=["post"], url_path="generate")
     def generate(self, request):
         serializer = GenerateWordRequestSerializer(data=request.data)

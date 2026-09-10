@@ -10,6 +10,7 @@ export const useWordsStore = defineStore("words", {
     categories: [] as string[],
     loading: false,
     error: "" as string,
+    recommendations: [] as any[]
   }),
   getters: {
     dueCount: (state) => state.dueWords.length,
@@ -25,6 +26,23 @@ export const useWordsStore = defineStore("words", {
       } finally {
         this.loading = false;
       }
+    },
+
+    async fetchRecommendations() {
+      try {
+        const data = await api.getRecommendations();
+        this.recommendations = data;
+      } catch (error) {
+        console.error("Failed to load recommendations", error);
+      }
+    },
+
+    async claimRecommendation(id: number) {
+      const newWord = await api.claimRecommendation(id);
+      this.recommendations = this.recommendations.filter((r) => r.id !== id);
+      this.words.unshift(newWord);
+      await this.fetchStats();
+      return newWord;
     },
 
     async fetchDueWords() {
