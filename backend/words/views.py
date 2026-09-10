@@ -4,7 +4,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from .gemini_service import generate_word_info, extract_vocabulary_from_text, GeminiError
 from .models import Word, ReviewLog, GlobalWord, SUGGESTED_CATEGORIES
 from .serializers import (
     WordSerializer,
@@ -46,6 +46,83 @@ class WordViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=["post"], url_path="extract")
+    def extract_from_text(self, request):
+        raw_text = request.data.get("text", "").strip()
+        if len(raw_text) < 15:
+            return Response(
+                {"detail": "Please provide a longer text snippet (at least 15 characters)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            items = extract_vocabulary_from_text(raw_text[:3500])
+        except GeminiError as exc:
+            return Response({"detail": str(exc)}, status=exc.status_code)
+
+        existing_user_words = set(
+            Word.objects.filter(user=request.user).values_list("word", flat=True)
+        )
+
+        results = []
+        for item in items:
+            w_name = item.get("word", "").strip().lower()
+            if not w_name:
+                continue
+
+            try:
+                GlobalWord.objects.get_or_create(
+                    word=w_name,
+                    defaults={
+                        "definition": item.get("definition", ""),
+                        "examples": item.get("examples", []),
+                        "usage_notes": item.get("usage_notes", ""),
+                        "collocations": item.get("collocations", []),
+                        "difficulty": item.get("difficulty", "intermediate"),
+                        "categories": item.get("categories", []),
+                    },
+                )
+            except Exception:
+                pass
+
+            item["already_in_deck"] = w_name in existing_user_words
+            results.append(item)
+
+        return Response(results, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"], url_path="batch-create")
+    def batch_create_words(self, request):
+        words_data = request.data.get("words", [])
+        if not isinstance(words_data, list) or not words_data:
+            return Response({"detail": "No words provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_words = []
+        for item in words_data:
+            w_name = item.get("word", "").strip().lower()
+            if not w_name or Word.objects.filter(user=request.user, word=w_name).exists():
+                continue
+
+            examples = item.get("examples", [])
+            if item.get("context_sentence") and item["context_sentence"] not in examples:
+                examples = [item["context_sentence"]] + examples
+
+            word_obj = Word.objects.create(
+                user=request.user,
+                word=w_name,
+                definition=item.get("definition", ""),
+                examples=examples,
+                usage_notes=item.get("usage_notes", ""),
+                collocations=item.get("collocations", []),
+                difficulty=item.get("difficulty", "intermediate"),
+                categories=item.get("categories", []),
+            )
+            created_words.append(WordSerializer(word_obj).data)
+
+        return Response(
+            {"created_count": len(created_words), "words": created_words},
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=False, methods=["get"], url_path="recommendations")
     def recommendations(self, request):
