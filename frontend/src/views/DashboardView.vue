@@ -2,12 +2,18 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useWordsStore } from "@/stores/words";
+import NotificationBanner from "@/components/NotificationBanner.vue";
+import { useNotifications } from "../composables/useNotifications";
 
 const store = useWordsStore();
 const router = useRouter();
+const { checkAndNotifyDueWords } = useNotifications();
 
 onMounted(async () => {
   await Promise.all([store.fetchStats(), store.fetchDueWords(), store.fetchWords()]);
+  if (store.dueWords && store.dueWords.length > 0) {
+    checkAndNotifyDueWords(store.dueWords);
+  }
 });
 
 const difficultyBreakdown = computed(() => {
@@ -30,6 +36,8 @@ const recentWords = computed(() => store.words.slice(0, 5));
       <h1 class="text-2xl font-semibold">Good to see you</h1>
       <p class="text-stone-500 mt-1">Here&rsquo;s what your vocabulary practice looks like today.</p>
     </header>
+
+    <NotificationBanner />
 
     <!-- Hero: due today -->
     <section
