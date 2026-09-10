@@ -3,3 +3,113 @@ ubiquitous
 ephemeral
 empathy
 paradigm shift
+
+# --- Work, Business & Tech (25 words) ---
+leverage
+bottleneck
+scalability
+pragmatic
+trade-off
+streamline
+bandwidth
+paradigm shift
+synergy
+benchmark
+delegate
+milestone
+incentive
+contingency
+feasibility
+stakeholder
+agile
+disruptive
+optimization
+actionable
+pipeline
+pivot
+redundancy
+traction
+workflow
+
+# --- Academic & Critical Thinking (25 words) ---
+plausible
+nuance
+paradox
+serendipity
+resilient
+dichotomy
+ubiquitous
+ephemeral
+correlation
+cognitive load
+empirical
+hypothesis
+anomaly
+synthesis
+rhetoric
+substantiate
+ambiguity
+fallacy
+extrapolate
+inherent
+scrutiny
+lucid
+prerequisite
+tenable
+precedent
+
+# --- Everyday Conversation & Phrasal Verbs (25 words) ---
+call it a day
+cut corners
+hit the ground running
+bite the bullet
+under the weather
+take for granted
+get over
+figure out
+brush up on
+bring up
+put off
+come across
+turn down
+look forward to
+cut down on
+run out of
+catch up
+keep an eye on
+break the ice
+see eye to eye
+back to the drawing board
+give up
+catch on
+hang out
+stand out
+
+# --- Health, Mind & Lifestyle (15 words) ---
+empathy
+mindfulness
+burnout
+sedentary
+procrastinate
+vulnerability
+gratitude
+fatigue
+insomnia
+metabolism
+introspection
+catharsis
+well-being
+anxiety
+habitual
+
+# --- Arts, Culture & Expression (10 words) ---
+aesthetic
+nostalgia
+narrative
+provocative
+melancholy
+surreal
+hyperbole
+cliché
+satire
+authentic

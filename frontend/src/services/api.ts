@@ -122,7 +122,8 @@ export const api = {
     const { data } = await client.get("/stats/");
     return data;
   },
-async getRecommendations(): Promise<any[]> {
+
+  async getRecommendations(): Promise<any[]> {
     const { data } = await client.get("/words/recommendations/");
     return data;
   },
@@ -131,6 +132,17 @@ async getRecommendations(): Promise<any[]> {
     const { data } = await client.post("/words/claim/", { id });
     return data;
   },
+
+  async extractWordsFromText(text: string): Promise<any[]> {
+    const { data } = await client.post("/words/extract/", { text });
+    return data;
+  },
+
+  async batchCreateWords(words: any[]): Promise<{ created_count: number; words: Word[] }> {
+    const { data } = await client.post("/words/batch-create/", { words });
+    return data;
+  },
+
 };
 
 export function apiErrorMessage(err: unknown): string {

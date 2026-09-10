@@ -17,7 +17,6 @@ GEMINI_ENDPOINT = (
 
 logger = logging.getLogger(__name__)
 
-# شاخص سراسری برای توزیع درخواست‌ها بین کلیدها (Round-Robin)
 _CURRENT_KEY_INDEX = 0
 
 
@@ -66,11 +65,10 @@ def _get_models() -> list[str]:
     models = getattr(settings, "GEMINI_MODELS", [])
     if not models and getattr(settings, "GEMINI_MODEL", ""):
         models = [settings.GEMINI_MODEL]
-    return models or ["gemini-2.0-flash", "gemini-1.5-flash"]
+    return models or ["gemini-3.5-flash", "gemini-3.6-flash"]
 
 
 def _clean_and_parse_json(text: str) -> dict:
-    """پارس کردن امن خروجی JSON مدل و حذف بلوک‌های مارک‌داون احتمالی"""
     cleaned = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
     try:
         parsed = json.loads(cleaned)
@@ -106,13 +104,11 @@ def generate_word_info(word: str) -> dict:
     prompt = _build_prompt(word)
     num_keys = len(keys)
 
-    # اگر کلیدهای چندگانه داریم، از کلید جاری شروع می‌کنیم و در صورت بروز خطا به بعدی‌ها می‌رویم
     key_indices_to_try = [(_CURRENT_KEY_INDEX + i) % num_keys for i in range(num_keys)]
 
     last_error_message = "Failed to generate word info."
     last_status = 502
 
-    # حلقه چرخش: مدل‌ها را به ترتیب اولویت و برای هر مدل کلیدها را تست می‌کنیم
     for model in models:
         url = GEMINI_ENDPOINT.format(model=model)
         payload = {
@@ -123,7 +119,6 @@ def generate_word_info(word: str) -> dict:
             },
         }
 
-        # در مدل‌های فکری اگر نیاز به غیرفعال‌سازی یا مینیمال کردن باشد
         if "3.5" in model or "3.6" in model:
             payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": "minimal"}
 
@@ -153,9 +148,7 @@ def generate_word_info(word: str) -> dict:
                 last_status = 503
                 continue
 
-            # حالت ۱: درخواست موفقیت‌آمیز بود (200 OK)
             if response.ok:
-                # برای درخواست‌های بعدی از همین کلید یا کلید بعدی استفاده کن
                 _CURRENT_KEY_INDEX = (key_idx + 1) % num_keys
                 try:
                     data = response.json()
@@ -183,32 +176,97 @@ def generate_word_info(word: str) -> dict:
                     last_error_message = "Gemini returned an unreadable response."
                     continue
 
-            # حالت ۲: برخورد با خطای سهمیه یا محدودیت نرخ (429)
             if response.status_code == 429:
                 logger.warning("Gemini quota reached for key_idx=%s on model=%s. Rotating key...", key_idx, model)
                 last_error_message = "API rate limit reached. Retrying with fallback..."
                 last_status = 429
-                continue  # بلافاصله کلید بعدی امتحان می‌شود
+                continue
 
-            # حالت ۳: خطاهای سرور جمنای یا شلوغی سرویس (500, 502, 503, 504)
             if response.status_code in (500, 502, 503, 504):
                 logger.warning("Gemini server error %s on model=%s. Switching...", response.status_code, model)
                 last_error_message = "Gemini service is temporarily unavailable."
                 last_status = 503
-                break  # خطای سمت مدل است؛ برو سراغ مدل بعدی!
+                break
 
-            # حالت ۴: مدل پیدا نشد (404)
             if response.status_code == 404:
                 logger.warning("Model %s not found (404). Falling back to next model.", model)
-                break  # مدل اشتباه است یا برداشته شده؛ مدل بعدی را تست کن
+                break
 
-            # خطاهای دیگر مثل دسترسی نامعتبر (401, 403)
             if response.status_code in (401, 403):
                 logger.warning("Key_idx=%s denied access (401/403). Rotating...", key_idx)
                 continue
 
-    # اگر تمام ترکیب‌های کلید و مدل شکست خوردند
     raise GeminiError(
         f"All AI services/keys were exhausted: {last_error_message}",
         status_code=last_status,
     )
+
+def _build_extract_prompt(text: str) -> str:
+    categories_hint = ", ".join(SUGGESTED_CATEGORIES)
+    return f"""You are an expert English language coach. A learner provided this text snippet:
+---
+{text}
+---
+
+Identify 3 to 7 of the most valuable, challenging, or natural vocabulary words, idioms, or phrasal verbs from this text for an English learner.
+For each item, provide:
+- "word": the base lemma/phrase (e.g. "streamline", "take for granted").
+- "definition": clear, learner-friendly English definition in the context of this text.
+- "context_sentence": the exact sentence from the provided text where this word appeared.
+- "examples": an array of 1-2 other realistic example sentences.
+- "usage_notes": short practical note (grammar, register, common mistake). Empty string if none.
+- "collocations": array of 2-4 common collocations.
+- "difficulty": "beginner", "intermediate", or "advanced".
+- "categories": array of 1-2 categories from this list if applicable: {categories_hint}.
+
+Return ONLY a valid JSON array of objects with these keys (no markdown code blocks, no commentary)."""
+
+
+def extract_vocabulary_from_text(text: str) -> list[dict]:
+    keys = _get_api_keys()
+    models = _get_models()
+    if not keys:
+        raise GeminiError("No GEMINI_API_KEYS configured.")
+
+    prompt = _build_extract_prompt(text)
+    num_keys = len(keys)
+
+    for model in models:
+        url = GEMINI_ENDPOINT.format(model=model)
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.3,
+                "responseMimeType": "application/json",
+            },
+        }
+
+        for key_idx in range(num_keys):
+            current_key = keys[key_idx]
+            try:
+                response = requests.post(
+                    url,
+                    headers={"x-goog-api-key": current_key, "Content-Type": "application/json"},
+                    json=payload,
+                    timeout=(5, settings.GEMINI_READ_TIMEOUT + 10),
+                )
+            except requests.RequestException:
+                continue
+
+            if response.ok:
+                try:
+                    data = response.json()
+                    raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+                    cleaned = re.sub(r"^```(?:json)?|```$", "", raw_text.strip(), flags=re.MULTILINE).strip()
+                    parsed = json.loads(cleaned)
+                    if isinstance(parsed, list):
+                        return parsed
+                except Exception:
+                    continue
+
+            if response.status_code == 429:
+                continue
+            if response.status_code in (500, 502, 503, 504):
+                break
+
+    raise GeminiError("Could not extract vocabulary from text. Please try again or use a shorter text.")
