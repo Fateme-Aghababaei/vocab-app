@@ -10,10 +10,10 @@
     </header>
 
     <section class="rounded-xl2 bg-white border border-stone-200 px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
-      <span class="p-input-icon-left w-full sm:max-w-xs relative">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
-        <InputText v-model="search" placeholder="Search words" class="w-full pl-9" />
-      </span>
+      <IconField class="w-full sm:max-w-xs">
+        <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
+        <InputText v-model="search" placeholder="Search words" aria-label="Search words" class="w-full" />
+      </IconField>
       <Select
         v-model="categoryFilter"
         :options="store.categories"
@@ -131,6 +131,8 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputText from "primevue/inputtext";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
 import Select from "primevue/select";
 import Dialog from "primevue/dialog";
 import DifficultyBadge from "@/components/DifficultyBadge.vue";
