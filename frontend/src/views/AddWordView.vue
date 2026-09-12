@@ -119,7 +119,7 @@
               v-if="!item.already_in_library"
               v-model="selectedItems[item.word]"
               type="checkbox"
-              class="mt-1 w-4 h-4 rounded text-pink-500 focus:ring-pink-400 cursor-pointer"
+              class="mt-1 w-4 h-4 shrink-0 rounded accent-pink-500 focus-visible:outline-pink-500 cursor-pointer"
             />
             <span v-else class="mt-1 text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-500 font-medium">Saved</span>
 
