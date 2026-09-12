@@ -62,7 +62,7 @@
         >
           <i v-if="addingId === rec.id" class="pi pi-spin pi-spinner text-xs"></i>
           <i v-else class="pi pi-plus text-xs"></i>
-          <span>Add to Deck</span>
+          <span>Add to Library</span>
         </button>
       </div>
     </div>

@@ -108,7 +108,7 @@
           >
             <i v-if="savingBatch" class="pi pi-spin pi-spinner text-xs"></i>
             <i v-else class="pi pi-plus text-xs"></i>
-            <span>Add {{ selectedCount() }} Selected to Deck</span>
+            <span>Add {{ selectedCount() }} Selected to Library</span>
           </button>
         </div>
 
@@ -120,7 +120,7 @@
             :class="selectedItems[item.word] ? 'border-pink-300 ring-1 ring-pink-300' : 'border-stone-200 opacity-80'"
           >
             <input
-              v-if="!item.already_in_deck"
+              v-if="!item.already_in_library"
               v-model="selectedItems[item.word]"
               type="checkbox"
               class="mt-1 w-4 h-4 rounded text-pink-500 focus:ring-pink-400 cursor-pointer"
@@ -231,7 +231,7 @@ async function handleSaveSingle() {
   saving.value = true;
   try {
     await store.createWord(form);
-    toast.add({ severity: "success", summary: "Word saved", detail: `"${form.word}" added to your deck!`, life: 2000 });
+    toast.add({ severity: "success", summary: "Word saved", detail: `"${form.word}" added to your library!`, life: 2000 });
     router.push("/library");
   } catch (e) {
     toast.add({ severity: "error", summary: "Couldn't save", detail: apiErrorMessage(e), life: 4000 });
@@ -257,10 +257,10 @@ async function handleExtract() {
   try {
     const items = await api.extractWordsFromText(rawText.value);
     extractedItems.value = items;
-    // Auto-select words that are not already in the deck
+    // Auto-select words that are not already in the library
     const selected: Record<string, boolean> = {};
     items.forEach((item) => {
-      if (!item.already_in_deck) {
+      if (!item.already_in_library) {
         selected[item.word] = true;
       }
     });
@@ -281,7 +281,7 @@ async function handleSaveBatch() {
   savingBatch.value = true;
   try {
     const res = await api.batchCreateWords(toAdd);
-    toast.add({ severity: "success", summary: "Added to Deck!", detail: `Saved ${res.created_count} words to your deck!`, life: 2500 });
+    toast.add({ severity: "success", summary: "Added to Library!", detail: `Saved ${res.created_count} words to your library!`, life: 2500 });
     await store.fetchStats();
     router.push("/library");
   } catch (e) {
