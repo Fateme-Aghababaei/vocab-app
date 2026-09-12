@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-stone-50 text-stone-800">
+  <div class="min-h-dvh bg-stone-50 text-stone-800">
     <Toast position="top-right" />
     <ConfirmDialog />
 
-    <template v-if="isPublicRoute">
+    <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <router-view />
       <AppFooter />
-    </template>
+    </div>
 
-    <div v-else class="flex min-h-screen">
+    <div v-else class="flex min-h-dvh">
       <aside
         class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
       >
@@ -87,10 +87,12 @@
         </button>
       </header>
 
-      <main class="flex-1 min-w-0">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
-          <InstallApp />
-          <router-view />
+      <main class="flex flex-1 min-w-0 flex-col">
+        <div class="flex flex-1 flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
+          <div class="flex-1 min-w-0">
+            <InstallApp />
+            <router-view />
+          </div>
           <AppFooter class="mt-2" />
         </div>
       </main>

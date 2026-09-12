@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-10">
+  <div class="flex-1 bg-stone-50 flex items-center justify-center px-4 py-10">
     <div class="w-full max-w-sm">
       <div class="flex flex-col items-center mb-8">
         <img src="/memento.png" alt="Memento" class="w-10 h-10 mb-3 shrink-0 object-contain" />
