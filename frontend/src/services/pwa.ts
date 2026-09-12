@@ -34,7 +34,7 @@ export async function installApp() {
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
-      console.warn("Vocab offline support could not be registered.");
+      console.warn("Memento offline support could not be registered.");
     });
   });
 }

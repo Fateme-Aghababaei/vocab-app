@@ -1,11 +1,11 @@
 // Cache only the public offline page. Account data always goes to the API.
-const CACHE = "vocab-offline-v1";
+const CACHE = "memento-offline-v2";
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.add("/offline.html")));
 });
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(
-    keys.filter((key) => key.startsWith("vocab-offline-") && key !== CACHE)
+    keys.filter((key) => (key.startsWith("vocab-offline-") || key.startsWith("memento-offline-")) && key !== CACHE)
       .map((key) => caches.delete(key)),
   )));
 });

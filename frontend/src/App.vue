@@ -15,12 +15,8 @@
         class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
       >
         <div class="flex items-center gap-2.5 px-2 mb-8">
-          <div
-            class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center text-white font-display font-semibold"
-          >
-            V
-          </div>
-          <span class="font-display text-lg font-semibold text-stone-900">Vocab</span>
+          <img src="/memento.png" alt="" class="w-8 h-8 shrink-0 object-contain" />
+          <span class="font-display text-lg font-semibold text-stone-900">Memento</span>
         </div>
 
         <nav class="flex flex-col gap-1">
@@ -81,12 +77,8 @@
         class="mobile-header md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-white border-b border-stone-200 px-4 py-3"
       >
         <div class="flex items-center gap-2">
-          <div
-            class="w-7 h-7 rounded-md bg-pink-500 flex items-center justify-center text-white font-display font-semibold text-sm"
-          >
-            V
-          </div>
-          <span class="font-display text-base font-semibold text-stone-900">Vocab</span>
+          <img src="/memento.png" alt="" class="w-7 h-7 shrink-0 object-contain" />
+          <span class="font-display text-base font-semibold text-stone-900">Memento</span>
         </div>
         <button
           type="button"

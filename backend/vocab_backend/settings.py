@@ -1,5 +1,5 @@
 """
-Django settings for the Vocab (vocabulary flashcards) backend.
+Django settings for the Memento (vocabulary flashcards) backend.
 
 Kept intentionally simple: single-user, local-first study tool.
 Configure GEMINI_API_KEY in a .env file at backend/.env before using

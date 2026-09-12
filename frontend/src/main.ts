@@ -11,7 +11,7 @@ import "./style.css";
 
 import App from "./App.vue";
 import router from "./router";
-import { VocabPreset } from "./theme";
+import { MementoPreset } from "./theme";
 import { useAuthStore } from "./stores/auth";
 
 const app = createApp(App);
@@ -20,7 +20,7 @@ app.use(createPinia());
 app.use(router);
 app.use(PrimeVue, {
   theme: {
-    preset: VocabPreset,
+    preset: MementoPreset,
     options: {
       darkModeSelector: false, // light-only, per the brand palette
     },

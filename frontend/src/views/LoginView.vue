@@ -2,11 +2,7 @@
   <div class="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-10">
     <div class="w-full max-w-sm">
       <div class="flex flex-col items-center mb-8">
-        <div
-          class="w-10 h-10 rounded-xl bg-pink-500 flex items-center justify-center text-white font-display font-semibold text-lg mb-3"
-        >
-          V
-        </div>
+        <img src="/memento.png" alt="Memento" class="w-10 h-10 mb-3 shrink-0 object-contain" />
         <h1 class="font-display text-2xl font-semibold text-stone-900">
           Welcome back
         </h1>

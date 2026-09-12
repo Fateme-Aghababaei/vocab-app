@@ -6,7 +6,7 @@ import Aura from "@primevue/themes/aura";
 // Secondary accent (warm yellow) is applied per-component (badges, progress
 // bars) rather than as PrimeVue's semantic "primary", since in this app
 // yellow plays a highlight role, not an action role.
-export const VocabPreset = definePreset(Aura, {
+export const MementoPreset = definePreset(Aura, {
   semantic: {
     primary: {
       50: "#fef1f4",
