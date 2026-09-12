@@ -3,6 +3,7 @@ import { computed } from "vue";
 import type { ReviewQuality, Word } from "@/types";
 import DifficultyBadge from "@/components/DifficultyBadge.vue";
 import CategoryChip from "@/components/CategoryChip.vue";
+import SpeakButton from "@/components/SpeakButton.vue";
 import { previewIntervals } from "@/utils/srsPreview";
 
 const props = defineProps<{
@@ -41,9 +42,14 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             <DifficultyBadge :difficulty="word.difficulty" />
           </div>
           <span class="text-xs font-medium text-stone-400 mb-3">Do you remember this word?</span>
-          <h2 class="font-display text-4xl sm:text-5xl font-semibold text-stone-900 mb-6">
-            {{ word.word }}
-          </h2>
+
+          <div class="flex items-center justify-center gap-3 mb-6">
+            <h2 class="font-display text-4xl sm:text-5xl font-semibold text-stone-900">
+              {{ word.word }}
+            </h2>
+            <SpeakButton :text="word.word" size="lg" />
+          </div>
+
           <p v-if="word.pronunciation" class="text-lg text-stone-500 mb-6 break-words" title="US English IPA">{{ word.pronunciation }}</p>
           <button
             type="button"
@@ -59,9 +65,12 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
           class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 bg-white border border-stone-200 shadow-soft flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
         >
           <div class="flex items-start justify-between gap-3 mb-3">
-            <h2 class="font-display text-2xl sm:text-3xl font-semibold text-stone-900">
-              {{ word.word }}
-            </h2>
+            <div class="flex items-center gap-2.5">
+              <h2 class="font-display text-2xl sm:text-3xl font-semibold text-stone-900">
+                {{ word.word }}
+              </h2>
+              <SpeakButton :text="word.word" size="md" />
+            </div>
             <DifficultyBadge :difficulty="word.difficulty" />
           </div>
 
@@ -72,13 +81,15 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             <h3 class="text-xs font-semibold uppercase tracking-wide text-stone-400 mb-1.5">
               Examples
             </h3>
-            <ul class="space-y-1.5">
+            <ul class="space-y-2">
               <li
                 v-for="(ex, i) in word.examples"
                 :key="i"
-                class="text-sm text-stone-600 italic leading-relaxed"
+                class="flex items-start gap-2 text-sm text-stone-600 italic leading-relaxed"
               >
-                &ldquo;{{ ex }}&rdquo;
+                <!-- دکمه تلفظ برای هر جمله مثال -->
+                <SpeakButton :text="ex" size="sm" title="Listen to example sentence" class="mt-0.5 shrink-0" />
+                <span>&ldquo;{{ ex }}&rdquo;</span>
               </li>
             </ul>
           </div>

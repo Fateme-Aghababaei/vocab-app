@@ -1,5 +1,5 @@
 # Local secrets (keep the configuration template)
-.env
+backend/.env
 .env.*
 !.env.example
 *.pem
