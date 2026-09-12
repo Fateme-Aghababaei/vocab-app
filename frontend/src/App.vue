@@ -4,7 +4,10 @@
     <ConfirmDialog />
 
     <!-- Auth pages (login/signup) render full-bleed, no app shell -->
-    <router-view v-if="isPublicRoute" />
+    <template v-if="isPublicRoute">
+      <router-view />
+      <AppFooter />
+    </template>
 
     <div v-else class="flex min-h-screen">
       <!-- Desktop sidebar -->
@@ -97,9 +100,10 @@
 
       <!-- Main content -->
       <main class="flex-1 min-w-0">
-        <div class="app-content max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-16 md:pt-6 pb-24 md:pb-10">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
           <InstallApp />
           <router-view />
+          <AppFooter class="mt-2" />
         </div>
       </main>
     </div>
@@ -131,6 +135,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import InstallApp from "@/components/InstallApp.vue";
+import AppFooter from "@/components/AppFooter.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useWordsStore } from "@/stores/words";

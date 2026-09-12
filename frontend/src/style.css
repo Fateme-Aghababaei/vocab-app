@@ -63,5 +63,4 @@ body {
 @media (max-width: 767px) {
   .mobile-header { padding-top: calc(0.75rem + env(safe-area-inset-top)); padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
   .mobile-nav { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); padding-left: max(0.5rem, env(safe-area-inset-left)); padding-right: max(0.5rem, env(safe-area-inset-right)); }
-  .app-content { padding-top: calc(4rem + env(safe-area-inset-top)); padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
 }
