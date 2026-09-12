@@ -3,6 +3,7 @@ export type Difficulty = "beginner" | "intermediate" | "advanced";
 export interface Word {
   id: number;
   word: string;
+  pronunciation: string;
   definition: string;
   examples: string[];
   usage_notes: string;
@@ -22,6 +23,7 @@ export interface Word {
 
 export interface GeneratedWordInfo {
   word: string;
+  pronunciation: string;
   definition: string;
   examples: string[];
   usage_notes: string;

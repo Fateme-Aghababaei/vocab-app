@@ -1,7 +1,7 @@
 """
 Resilient Gemini Flash API wrapper with Key Rotation and Model Fallback.
 Handles 429 (Rate-limits/Quota) by rotating API keys and 503/500/504 (Outages)
-by switching fallback models.
+by switching fallback models. Generates pronunciation and learning content.
 """
 import json
 import re
@@ -34,6 +34,9 @@ self-study learner. A learner just saved the word/phrase: "{word}"
 Return ONLY a single JSON object (no markdown fences, no commentary) with
 exactly these keys:
 
+- "pronunciation": a US English IPA transcripteion enclosed in slashes, matching
+  the meaning and part of speech in the definition (e.g. /həˈloʊ/). For phrass,
+  transcribe the whole phrase. Use an empty string if unsure. Maximum 200 characters.
 - "definition": a single clear, learner-friendly English definition (one or
   two sentences, plain language, no jargon).
 - "examples": an array of 1-2 natural example sentences that show the word
@@ -87,6 +90,11 @@ def _clean_and_parse_json(text: str) -> dict:
         raise GeminiError("Gemini returned invalid usage notes. Please try again.")
     if parsed.get("difficulty", "intermediate") not in ("beginner", "intermediate", "advanced"):
         raise GeminiError("Gemini returned an invalid difficulty. Please try again.")
+
+    pronunciation = parsed.get("pronunciation", "")
+    if not isinstance(pronunciation, str) or len(pronunciation) > 200:
+        raise GeminiError("Gemini returned invalid pronunciation. Please try again.")
+    parsed["pronunciation"] = pronunciation.strip()
 
     return parsed
 
@@ -164,6 +172,7 @@ def generate_word_info(word: str) -> dict:
 
                     return {
                         "word": word,
+                        "pronunciation": parsed["pronunciation"],
                         "definition": parsed.get("definition", ""),
                         "examples": parsed.get("examples", []) or [],
                         "usage_notes": parsed.get("usage_notes", ""),

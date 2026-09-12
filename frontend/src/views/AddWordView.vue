@@ -23,24 +23,31 @@ const activeTab = ref<"single" | "extract">("single");
 const wordInput = ref("");
 const generating = ref(false);
 const saving = ref(false);
-const form = reactive<NewWordPayload>({
-  word: "",
-  definition: "",
-  examples: [],
-  usage_notes: "",
-  collocations: [],
-  difficulty: "intermediate",
-  categories: [],
-});
+
+function emptyPayload(word = ""): NewWordPayload {
+  return {
+    word,
+    pronunciation: "",
+    definition: "",
+    examples: [],
+    usage_notes: "",
+    collocations: [],
+    difficulty: "intermediate",
+    categories: [],
+  };
+}
+
+const form = reactive<NewWordPayload>(emptyPayload());
 
 async function handleGenerate() {
   const w = wordInput.value.trim();
-  if (!w) return;
+  if (!w || generating.value) return;
   generating.value = true;
   try {
     const info = await api.generateWordInfo(w);
     Object.assign(form, {
       word: info.word,
+      pronunciation: info.pronunciation,
       definition: info.definition,
       examples: info.examples,
       usage_notes: info.usage_notes,
@@ -50,6 +57,7 @@ async function handleGenerate() {
     });
     toast.add({ severity: "success", summary: "Ready to save", detail: `Generated definition for "${info.word}"`, life: 2000 });
   } catch (e) {
+    Object.assign(form, emptyPayload(w));
     toast.add({ severity: "error", summary: "Couldn't generate", detail: apiErrorMessage(e), life: 4000 });
   } finally {
     generating.value = false;
@@ -60,7 +68,7 @@ async function handleSaveSingle() {
   if (!form.word || !form.definition) return;
   saving.value = true;
   try {
-    await store.addWord(form);
+    await store.createWord(form);
     toast.add({ severity: "success", summary: "Word saved", detail: `"${form.word}" added to your deck!`, life: 2000 });
     router.push("/library");
   } catch (e) {

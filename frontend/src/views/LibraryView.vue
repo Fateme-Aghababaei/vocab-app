@@ -52,6 +52,7 @@ onMounted(async () => {
 const editing = ref<Word | null>(null);
 const editForm = reactive<NewWordPayload>({
   word: "",
+  pronunciation: "",
   definition: "",
   examples: [],
   usage_notes: "",
@@ -65,6 +66,7 @@ function openEdit(word: Word) {
   editing.value = word;
   Object.assign(editForm, {
     word: word.word,
+    pronunciation: word.pronunciation ?? "",
     definition: word.definition,
     examples: [...word.examples],
     usage_notes: word.usage_notes,

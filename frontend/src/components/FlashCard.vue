@@ -50,6 +50,7 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             <SpeakButton :text="word.word" size="lg" />
           </div>
 
+          <p v-if="word.pronunciation" class="text-lg text-stone-500 mb-6 break-words" title="US English IPA">{{ word.pronunciation }}</p>
           <button
             type="button"
             class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
@@ -73,6 +74,7 @@ const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
             <DifficultyBadge :difficulty="word.difficulty" />
           </div>
 
+          <p v-if="word.pronunciation" class="text-sm text-stone-500 mb-3 break-words" title="US English IPA">{{ word.pronunciation }}</p>
           <p class="text-stone-700 leading-relaxed mb-4">{{ word.definition }}</p>
 
           <div v-if="word.examples.length" class="mb-4">
