@@ -10,7 +10,7 @@ export const useWordsStore = defineStore("words", {
     categories: [] as string[],
     loading: false,
     error: "" as string,
-    recommendations: [] as any[]
+    recommendations: [] as any[],
   }),
   getters: {
     dueCount: (state) => state.dueWords.length,
@@ -21,7 +21,7 @@ export const useWordsStore = defineStore("words", {
       this.error = "";
       try {
         this.words = await api.listWords(filters);
-      } catch (e) {
+      } catch {
         this.error = "Couldn't load your words.";
       } finally {
         this.loading = false;

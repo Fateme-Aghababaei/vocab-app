@@ -23,8 +23,6 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-// A 401 means the token is missing/expired - clear it and send the user
-// back to login rather than leaving them stuck on a broken page.
 client.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,7 +33,7 @@ client.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export interface WordFilters {
@@ -150,7 +148,6 @@ export function apiErrorMessage(err: unknown): string {
     const data = err.response?.data;
     if (!data) return err.message;
     if (typeof data.detail === "string") return data.detail;
-    // DRF validation errors look like {"field": ["msg", ...], "non_field_errors": [...]}
     const firstKey = Object.keys(data)[0];
     if (firstKey && Array.isArray(data[firstKey])) {
       return data[firstKey][0];

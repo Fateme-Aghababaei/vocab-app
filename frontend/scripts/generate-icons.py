@@ -1,13 +1,10 @@
-"""Render the Vocab V mark to PNG with no third-party dependencies."""
 from pathlib import Path
 import struct
 import zlib
 
 OUTPUT = Path(__file__).resolve().parents[1] / "public" / "icons"
-# A serif V, within the central safe area for maskable icons.
-POLYGON = [(29, 30), (47, 30), (47, 34), (43, 34), (53, 59),
-           (63, 34), (58, 34), (58, 30), (73, 30), (73, 34),
-           (69, 34), (54, 71), (48, 71), (33, 34), (29, 34)]
+POLYGON = [(29, 71), (29, 30), (38, 30), (50, 51), (62, 30), (71, 30),
+           (71, 71), (62, 71), (62, 47), (50, 67), (38, 47), (38, 71)]
 
 
 def inside(x, y):

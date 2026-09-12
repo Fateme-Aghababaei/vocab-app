@@ -42,9 +42,6 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
-  // Validate any stored token exactly once, on first navigation, so a page
-  // refresh doesn't flash logged-in content before we know the token is
-  // still good.
   if (!auth.initialized) {
     await auth.init();
   }

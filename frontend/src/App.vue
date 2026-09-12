@@ -1,69 +1,20 @@
-<script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import InstallApp from "@/components/InstallApp.vue";
-import Toast from "primevue/toast";
-import ConfirmDialog from "primevue/confirmdialog";
-import { useWordsStore } from "@/stores/words";
-import { useAuthStore } from "@/stores/auth";
-
-const route = useRoute();
-const router = useRouter();
-const store = useWordsStore();
-const auth = useAuthStore();
-
-const navItems = [
-  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/" },
-  { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
-  { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
-  { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
-];
-
-const isActive = (name: string) => route.name === name;
-const dueBadge = computed(() => store.dueCount);
-const isPublicRoute = computed(() => !!route.meta.public);
-
-// Fetch (and re-fetch) the due count whenever we have an authenticated user
-// - covers both first load and the moment a login/signup completes.
-watch(
-  () => auth.isAuthenticated,
-  (authed) => {
-    if (authed) store.fetchDueWords();
-  },
-  { immediate: true }
-);
-
-onMounted(() => {
-  if (auth.isAuthenticated) store.fetchDueWords();
-});
-
-async function handleLogout() {
-  await auth.logout();
-  store.$reset();
-  router.push("/login");
-}
-</script>
-
 <template>
-  <div class="min-h-screen bg-stone-50 text-stone-800">
+  <div class="min-h-dvh bg-stone-50 text-stone-800">
     <Toast position="top-right" />
     <ConfirmDialog />
 
-    <!-- Auth pages (login/signup) render full-bleed, no app shell -->
-    <router-view v-if="isPublicRoute" />
+    <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <router-view />
+      <AppFooter />
+    </div>
 
-    <div v-else class="flex min-h-screen">
-      <!-- Desktop sidebar -->
+    <div v-else class="flex min-h-dvh">
       <aside
-        class="hidden md:flex md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
+        class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
       >
         <div class="flex items-center gap-2.5 px-2 mb-8">
-          <div
-            class="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center text-white font-display font-semibold"
-          >
-            V
-          </div>
-          <span class="font-display text-lg font-semibold text-stone-900">Vocab</span>
+          <img src="/memento.png" alt="" class="w-8 h-8 shrink-0 object-contain" />
+          <span class="font-display text-lg font-semibold text-stone-900">Memento</span>
         </div>
 
         <nav class="flex flex-col gap-1">
@@ -99,8 +50,12 @@ async function handleLogout() {
           </p>
           <div class="flex items-center justify-between gap-2 rounded-xl border border-stone-200 px-3 py-2.5">
             <div class="min-w-0">
-              <p class="text-sm font-medium text-stone-800 truncate">{{ auth.user?.name }}</p>
-              <p class="text-xs text-stone-400 truncate">{{ auth.user?.email }}</p>
+              <p class="text-sm font-medium text-stone-800 truncate">
+                {{ auth.user?.name }}
+              </p>
+              <p class="text-xs text-stone-400 truncate">
+                {{ auth.user?.email }}
+              </p>
             </div>
             <button
               type="button"
@@ -115,17 +70,12 @@ async function handleLogout() {
         </div>
       </aside>
 
-      <!-- Mobile top bar -->
       <header
         class="mobile-header md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-white border-b border-stone-200 px-4 py-3"
       >
         <div class="flex items-center gap-2">
-          <div
-            class="w-7 h-7 rounded-md bg-pink-500 flex items-center justify-center text-white font-display font-semibold text-sm"
-          >
-            V
-          </div>
-          <span class="font-display text-base font-semibold text-stone-900">Vocab</span>
+          <img src="/memento.png" alt="" class="w-7 h-7 shrink-0 object-contain" />
+          <span class="font-display text-base font-semibold text-stone-900">Memento</span>
         </div>
         <button
           type="button"
@@ -137,16 +87,17 @@ async function handleLogout() {
         </button>
       </header>
 
-      <!-- Main content -->
-      <main class="flex-1 min-w-0">
-        <div class="app-content max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-16 md:pt-6 pb-24 md:pb-10">
-          <InstallApp />
-          <router-view />
+      <main class="flex flex-1 min-w-0 flex-col">
+        <div class="flex flex-1 flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
+          <div class="flex-1 min-w-0">
+            <InstallApp />
+            <router-view />
+          </div>
+          <AppFooter class="mt-2" />
         </div>
       </main>
     </div>
 
-    <!-- Mobile bottom nav -->
     <nav
       v-if="!isPublicRoute"
       class="mobile-nav md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-stone-200 flex justify-around items-center py-2 px-2 z-40"
@@ -168,3 +119,48 @@ async function handleLogout() {
     </nav>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import InstallApp from "@/components/InstallApp.vue";
+import AppFooter from "@/components/AppFooter.vue";
+import Toast from "primevue/toast";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useWordsStore } from "@/stores/words";
+import { useAuthStore } from "@/stores/auth";
+
+const route = useRoute();
+const router = useRouter();
+const store = useWordsStore();
+const auth = useAuthStore();
+
+const navItems = [
+  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/" },
+  { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
+  { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
+  { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
+];
+
+const isActive = (name: string) => route.name === name;
+const dueBadge = computed(() => store.dueCount);
+const isPublicRoute = computed(() => !!route.meta.public);
+
+watch(
+  () => auth.isAuthenticated,
+  (authed) => {
+    if (authed) store.fetchDueWords();
+  },
+  { immediate: true },
+);
+
+onMounted(() => {
+  if (auth.isAuthenticated) store.fetchDueWords();
+});
+
+async function handleLogout() {
+  await auth.logout();
+  store.$reset();
+  router.push("/login");
+}
+</script>

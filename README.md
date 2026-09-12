@@ -1,4 +1,4 @@
-# Vocab — a flashcard-based vocabulary learner
+# Memento — a flashcard-based vocabulary learner
 
 A minimal, focused app for saving new English words and reviewing them with
 spaced repetition. Add a word, let Gemini Flash draft the definition,

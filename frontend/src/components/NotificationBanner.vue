@@ -1,23 +1,3 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-import { useNotifications } from '@/composables/useNotifications';
-
-const { isSupported, permission, requestPermission, sendTestNotification } = useNotifications();
-const dismissed = ref(localStorage.getItem('vocab_notification_banner_dismissed') === 'true');
-
-const handleEnable = async () => {
-  const granted = await requestPermission();
-  if (granted) {
-    sendTestNotification();
-  }
-};
-
-const handleDismiss = () => {
-  dismissed.value = true;
-  localStorage.setItem('vocab_notification_banner_dismissed', 'true');
-};
-</script>
-
 <template>
   <div
     v-if="isSupported && permission !== 'granted' && !dismissed"
@@ -56,3 +36,23 @@ const handleDismiss = () => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import { useNotifications } from "@/composables/useNotifications";
+
+const { isSupported, permission, requestPermission, sendTestNotification } = useNotifications();
+const dismissed = ref(localStorage.getItem("vocab_notification_banner_dismissed") === "true");
+
+const handleEnable = async () => {
+  const granted = await requestPermission();
+  if (granted) {
+    sendTestNotification();
+  }
+};
+
+const handleDismiss = () => {
+  dismissed.value = true;
+  localStorage.setItem("vocab_notification_banner_dismissed", "true");
+};
+</script>

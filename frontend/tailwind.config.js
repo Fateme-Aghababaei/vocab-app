@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{vue,ts}"],
   theme: {
@@ -30,7 +29,6 @@ export default {
           900: "#a37200",
           950: "#7f5900",
         },
-        // Warm, restrained neutral scale used for backgrounds, borders, text.
         stone: {
           25: "#fefdfb",
           50: "#faf8f5",
