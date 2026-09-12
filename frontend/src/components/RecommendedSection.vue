@@ -1,51 +1,3 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useWordsStore } from '@/stores/words';
-import { useToast } from 'primevue/usetoast';
-import DifficultyBadge from '@/components/DifficultyBadge.vue';
-import CategoryChip from '@/components/CategoryChip.vue';
-import SpeakButton from '@/components/SpeakButton.vue';
-import type { Difficulty } from '@/types';
-
-interface RecommendedWord {
-  id: number;
-  word: string;
-  definition: string;
-  difficulty: Difficulty;
-  categories: string[];
-}
-
-const store = useWordsStore();
-const toast = useToast();
-const addingId = ref<number | null>(null);
-
-onMounted(() => {
-  store.fetchRecommendations();
-});
-
-const handleAdd = async (rec: RecommendedWord) => {
-  addingId.value = rec.id;
-  try {
-    await store.claimRecommendation(rec.id);
-    toast.add({
-      severity: 'success',
-      summary: 'Added to your cards!',
-      detail: `"${rec.word}" is ready to practice.`,
-      life: 2500,
-    });
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Failed to add',
-      detail: 'Could not add this word.',
-      life: 3000,
-    });
-  } finally {
-    addingId.value = null;
-  }
-};
-</script>
-
 <template>
   <section v-if="store.recommendations && store.recommendations.length > 0" class="flex flex-col gap-3">
     <div class="flex items-center justify-between">
@@ -54,7 +6,9 @@ const handleAdd = async (rec: RecommendedWord) => {
           <span>Recommended for you</span>
           <span class="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-sans font-medium">Smart pick</span>
         </h2>
-        <p class="text-xs text-stone-500 mt-0.5">Words tailored to your interests and study level.</p>
+        <p class="text-xs text-stone-500 mt-0.5">
+          Words tailored to your interests and study level.
+        </p>
       </div>
 
       <button
@@ -93,7 +47,9 @@ const handleAdd = async (rec: RecommendedWord) => {
 
           <!-- Categories -->
           <div class="flex flex-wrap gap-1 mb-4">
-            <CategoryChip v-for="c in rec.categories.slice(0, 1)" :key="c">{{ c }}</CategoryChip>
+            <CategoryChip v-for="c in rec.categories.slice(0, 1)" :key="c">
+              {{ c }}
+            </CategoryChip>
           </div>
         </div>
 
@@ -112,3 +68,51 @@ const handleAdd = async (rec: RecommendedWord) => {
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useWordsStore } from "@/stores/words";
+import { useToast } from "primevue/usetoast";
+import DifficultyBadge from "@/components/DifficultyBadge.vue";
+import CategoryChip from "@/components/CategoryChip.vue";
+import SpeakButton from "@/components/SpeakButton.vue";
+import type { Difficulty } from "@/types";
+
+interface RecommendedWord {
+  id: number;
+  word: string;
+  definition: string;
+  difficulty: Difficulty;
+  categories: string[];
+}
+
+const store = useWordsStore();
+const toast = useToast();
+const addingId = ref<number | null>(null);
+
+onMounted(() => {
+  store.fetchRecommendations();
+});
+
+const handleAdd = async (rec: RecommendedWord) => {
+  addingId.value = rec.id;
+  try {
+    await store.claimRecommendation(rec.id);
+    toast.add({
+      severity: "success",
+      summary: "Added to your cards!",
+      detail: `"${rec.word}" is ready to practice.`,
+      life: 2500,
+    });
+  } catch {
+    toast.add({
+      severity: "error",
+      summary: "Failed to add",
+      detail: "Could not add this word.",
+      life: 3000,
+    });
+  } finally {
+    addingId.value = null;
+  }
+};
+</script>

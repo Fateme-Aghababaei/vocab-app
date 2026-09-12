@@ -1,3 +1,13 @@
+<template>
+  <span
+    class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium"
+    :class="config.text"
+  >
+    <span class="w-1.5 h-1.5 rounded-full" :class="config.dot"></span>
+    {{ config.label }}
+  </span>
+</template>
+
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Difficulty } from "@/types";
@@ -15,13 +25,3 @@ const config = computed(() => {
   }
 });
 </script>
-
-<template>
-  <span
-    class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium"
-    :class="config.text"
-  >
-    <span class="w-1.5 h-1.5 rounded-full" :class="config.dot"></span>
-    {{ config.label }}
-  </span>
-</template>

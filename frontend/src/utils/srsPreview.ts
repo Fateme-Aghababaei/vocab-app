@@ -3,8 +3,6 @@ import type { Word } from "@/types";
 // Mirrors backend words/srs.py closely enough to preview the *next* interval
 // for each rating button. The backend remains the source of truth; this is
 // purely a UX hint so the learner knows what "Good" vs "Easy" will do.
-const MIN_EASE = 1.3;
-
 function initialEase(difficulty: Word["difficulty"]): number {
   if (difficulty === "beginner") return 2.7;
   if (difficulty === "advanced") return 2.3;

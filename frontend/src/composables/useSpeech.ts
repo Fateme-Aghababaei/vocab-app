@@ -1,11 +1,11 @@
-import { ref } from 'vue';
+import { ref } from "vue";
 
 export function useSpeech() {
   const isSpeaking = ref(false);
 
-  const speak = (text: string, lang = 'en-US') => {
-    if (!('speechSynthesis' in window)) {
-      console.warn('مرورگر شما از Web Speech API پشتیبانی نمی‌کند.');
+  const speak = (text: string, lang = "en-US") => {
+    if (!("speechSynthesis" in window)) {
+      console.warn("مرورگر شما از Web Speech API پشتیبانی نمی‌کند.");
       return;
     }
 
@@ -32,7 +32,7 @@ export function useSpeech() {
   };
 
   const stop = () => {
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       isSpeaking.value = false;
     }

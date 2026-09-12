@@ -6,7 +6,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(
     keys.filter((key) => key.startsWith("vocab-offline-") && key !== CACHE)
-      .map((key) => caches.delete(key))
+      .map((key) => caches.delete(key)),
   )));
 });
 self.addEventListener("fetch", (event) => {
@@ -33,6 +33,6 @@ self.addEventListener("notificationclick", (event) => {
       if (clients.openWindow) {
         return clients.openWindow("/");
       }
-    })
+    }),
   );
 });

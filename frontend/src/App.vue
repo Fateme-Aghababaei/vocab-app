@@ -1,49 +1,3 @@
-<script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import InstallApp from "@/components/InstallApp.vue";
-import Toast from "primevue/toast";
-import ConfirmDialog from "primevue/confirmdialog";
-import { useWordsStore } from "@/stores/words";
-import { useAuthStore } from "@/stores/auth";
-
-const route = useRoute();
-const router = useRouter();
-const store = useWordsStore();
-const auth = useAuthStore();
-
-const navItems = [
-  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/" },
-  { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
-  { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
-  { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
-];
-
-const isActive = (name: string) => route.name === name;
-const dueBadge = computed(() => store.dueCount);
-const isPublicRoute = computed(() => !!route.meta.public);
-
-// Fetch (and re-fetch) the due count whenever we have an authenticated user
-// - covers both first load and the moment a login/signup completes.
-watch(
-  () => auth.isAuthenticated,
-  (authed) => {
-    if (authed) store.fetchDueWords();
-  },
-  { immediate: true }
-);
-
-onMounted(() => {
-  if (auth.isAuthenticated) store.fetchDueWords();
-});
-
-async function handleLogout() {
-  await auth.logout();
-  store.$reset();
-  router.push("/login");
-}
-</script>
-
 <template>
   <div class="min-h-screen bg-stone-50 text-stone-800">
     <Toast position="top-right" />
@@ -99,8 +53,12 @@ async function handleLogout() {
           </p>
           <div class="flex items-center justify-between gap-2 rounded-xl border border-stone-200 px-3 py-2.5">
             <div class="min-w-0">
-              <p class="text-sm font-medium text-stone-800 truncate">{{ auth.user?.name }}</p>
-              <p class="text-xs text-stone-400 truncate">{{ auth.user?.email }}</p>
+              <p class="text-sm font-medium text-stone-800 truncate">
+                {{ auth.user?.name }}
+              </p>
+              <p class="text-xs text-stone-400 truncate">
+                {{ auth.user?.email }}
+              </p>
             </div>
             <button
               type="button"
@@ -168,3 +126,49 @@ async function handleLogout() {
     </nav>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import InstallApp from "@/components/InstallApp.vue";
+import Toast from "primevue/toast";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useWordsStore } from "@/stores/words";
+import { useAuthStore } from "@/stores/auth";
+
+const route = useRoute();
+const router = useRouter();
+const store = useWordsStore();
+const auth = useAuthStore();
+
+const navItems = [
+  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/" },
+  { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
+  { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
+  { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
+];
+
+const isActive = (name: string) => route.name === name;
+const dueBadge = computed(() => store.dueCount);
+const isPublicRoute = computed(() => !!route.meta.public);
+
+// Fetch (and re-fetch) the due count whenever we have an authenticated user
+// - covers both first load and the moment a login/signup completes.
+watch(
+  () => auth.isAuthenticated,
+  (authed) => {
+    if (authed) store.fetchDueWords();
+  },
+  { immediate: true },
+);
+
+onMounted(() => {
+  if (auth.isAuthenticated) store.fetchDueWords();
+});
+
+async function handleLogout() {
+  await auth.logout();
+  store.$reset();
+  router.push("/login");
+}
+</script>

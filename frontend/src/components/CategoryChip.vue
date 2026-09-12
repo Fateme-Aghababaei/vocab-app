@@ -1,19 +1,8 @@
-<script setup lang="ts">
-withDefaults(
-  defineProps<{
-    removable?: boolean;
-  }>(),
-  { removable: false }
-);
-
-defineEmits<{ (e: "remove"): void }>();
-</script>
-
 <template>
   <span
     class="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-600"
   >
-    <slot />
+    <slot></slot>
     <button
       v-if="removable"
       type="button"
@@ -25,3 +14,14 @@ defineEmits<{ (e: "remove"): void }>();
     </button>
   </span>
 </template>
+
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    removable?: boolean;
+  }>(),
+  { removable: false },
+);
+
+defineEmits<{ (e: "remove"): void }>();
+</script>

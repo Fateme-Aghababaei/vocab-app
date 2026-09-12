@@ -1,26 +1,3 @@
-<script setup lang="ts">
-import { useSpeech } from '@/composables/useSpeech';
-
-const props = withDefaults(
-  defineProps<{
-    text: string;
-    size?: 'sm' | 'md' | 'lg';
-    title?: string;
-  }>(),
-  {
-    size: 'md',
-    title: 'Word pronunciation',
-  }
-);
-
-const { speak, isSpeaking } = useSpeech();
-
-const handleClick = (e: Event) => {
-  e.stopPropagation(); // جلوگیری از رویداد کلیک روی فلش‌کارت یا ردیف‌ها
-  speak(props.text);
-};
-</script>
-
 <template>
   <button
     type="button"
@@ -64,3 +41,26 @@ const handleClick = (e: Event) => {
     </svg>
   </button>
 </template>
+
+<script setup lang="ts">
+import { useSpeech } from "@/composables/useSpeech";
+
+const props = withDefaults(
+  defineProps<{
+    text: string;
+    size?: "sm" | "md" | "lg";
+    title?: string;
+  }>(),
+  {
+    size: "md",
+    title: "Word pronunciation",
+  },
+);
+
+const { speak, isSpeaking } = useSpeech();
+
+const handleClick = (e: Event) => {
+  e.stopPropagation(); // جلوگیری از رویداد کلیک روی فلش‌کارت یا ردیف‌ها
+  speak(props.text);
+};
+</script>

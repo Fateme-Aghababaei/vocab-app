@@ -1,36 +1,3 @@
-<script setup lang="ts">
-import InputText from "primevue/inputtext";
-import Textarea from "primevue/textarea";
-import Button from "primevue/button";
-
-const props = withDefaults(
-  defineProps<{
-    modelValue: string[];
-    placeholder?: string;
-    multiline?: boolean;
-    addLabel?: string;
-  }>(),
-  { placeholder: "", multiline: false, addLabel: "Add" }
-);
-
-const emit = defineEmits<{ (e: "update:modelValue", value: string[]): void }>();
-
-function update(i: number, value: string) {
-  const next = [...props.modelValue];
-  next[i] = value;
-  emit("update:modelValue", next);
-}
-
-function add() {
-  emit("update:modelValue", [...props.modelValue, ""]);
-}
-
-function remove(i: number) {
-  const next = props.modelValue.filter((_, idx) => idx !== i);
-  emit("update:modelValue", next);
-}
-</script>
-
 <template>
   <div class="flex flex-col gap-2">
     <div v-for="(item, i) in modelValue" :key="i" class="flex items-start gap-2">
@@ -69,3 +36,36 @@ function remove(i: number) {
     />
   </div>
 </template>
+
+<script setup lang="ts">
+import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
+import Button from "primevue/button";
+
+const props = withDefaults(
+  defineProps<{
+    modelValue: string[];
+    placeholder?: string;
+    multiline?: boolean;
+    addLabel?: string;
+  }>(),
+  { placeholder: "", multiline: false, addLabel: "Add" },
+);
+
+const emit = defineEmits<{ (e: "update:modelValue", value: string[]): void }>();
+
+function update(i: number, value: string) {
+  const next = [...props.modelValue];
+  next[i] = value;
+  emit("update:modelValue", next);
+}
+
+function add() {
+  emit("update:modelValue", [...props.modelValue, ""]);
+}
+
+function remove(i: number) {
+  const next = props.modelValue.filter((_, idx) => idx !== i);
+  emit("update:modelValue", next);
+}
+</script>
