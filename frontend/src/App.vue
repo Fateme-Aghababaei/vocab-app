@@ -3,14 +3,12 @@
     <Toast position="top-right" />
     <ConfirmDialog />
 
-    <!-- Auth pages (login/signup) render full-bleed, no app shell -->
     <template v-if="isPublicRoute">
       <router-view />
       <AppFooter />
     </template>
 
     <div v-else class="flex min-h-screen">
-      <!-- Desktop sidebar -->
       <aside
         class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
       >
@@ -72,7 +70,6 @@
         </div>
       </aside>
 
-      <!-- Mobile top bar -->
       <header
         class="mobile-header md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-white border-b border-stone-200 px-4 py-3"
       >
@@ -90,7 +87,6 @@
         </button>
       </header>
 
-      <!-- Main content -->
       <main class="flex-1 min-w-0">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
           <InstallApp />
@@ -100,7 +96,6 @@
       </main>
     </div>
 
-    <!-- Mobile bottom nav -->
     <nav
       v-if="!isPublicRoute"
       class="mobile-nav md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-stone-200 flex justify-around items-center py-2 px-2 z-40"
@@ -149,8 +144,6 @@ const isActive = (name: string) => route.name === name;
 const dueBadge = computed(() => store.dueCount);
 const isPublicRoute = computed(() => !!route.meta.public);
 
-// Fetch (and re-fetch) the due count whenever we have an authenticated user
-// - covers both first load and the moment a login/signup completes.
 watch(
   () => auth.isAuthenticated,
   (authed) => {

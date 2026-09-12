@@ -36,14 +36,12 @@ export function useNotifications() {
         await registration.showNotification(title, defaultOptions);
         return;
       } catch {
-        // Fallback to standard window Notification
       }
     }
 
     new Notification(title, defaultOptions);
   };
 
-  // Smart reminder: Triggers only when words are due and once per day max
   const checkAndNotifyDueWords = async (dueWords: DueWordItem[]) => {
     if (!dueWords || dueWords.length === 0 || permission.value !== "granted") return;
 

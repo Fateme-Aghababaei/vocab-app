@@ -9,7 +9,6 @@
       </p>
     </header>
 
-    <!-- Tab Switcher -->
     <div class="flex items-center gap-2 p-1 rounded-xl bg-stone-200/70 w-fit">
       <button
         type="button"
@@ -31,7 +30,6 @@
       </button>
     </div>
 
-    <!-- TAB 1: Single Word Lookup -->
     <div v-if="activeTab === 'single'" class="flex flex-col gap-6">
       <section class="rounded-xl2 bg-white border border-stone-200 p-5 shadow-soft flex flex-col sm:flex-row gap-3">
         <InputText
@@ -67,7 +65,6 @@
       </section>
     </div>
 
-    <!-- TAB 2: Learn From Anything (Extract from Text) -->
     <div v-else class="flex flex-col gap-6">
       <section class="rounded-xl2 bg-white border border-stone-200 p-5 shadow-soft flex flex-col gap-4">
         <label class="font-medium text-sm text-stone-700">
@@ -94,7 +91,6 @@
         </div>
       </section>
 
-      <!-- Extracted Results List -->
       <section v-if="extractedItems.length" class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <h2 class="font-display font-semibold text-lg text-stone-900">
@@ -142,7 +138,6 @@
                 {{ item.definition }}
               </p>
 
-              <!-- In-context sentence from user's text -->
               <div v-if="item.context_sentence" class="bg-yellow-50/70 border-l-2 border-yellow-400 px-3 py-1.5 rounded-r text-xs text-stone-700 italic mb-2">
                 &ldquo;{{ item.context_sentence }}&rdquo;
               </div>
@@ -178,10 +173,8 @@ const router = useRouter();
 const store = useWordsStore();
 const toast = useToast();
 
-// Mode: 'single' | 'extract'
 const activeTab = ref<"single" | "extract">("single");
 
-// --- Tab 1: Single Word State ---
 const wordInput = ref("");
 const generating = ref(false);
 const saving = ref(false);
@@ -240,7 +233,6 @@ async function handleSaveSingle() {
   }
 }
 
-// --- Tab 2: Learn From Anything (Extract) State ---
 const rawText = ref("");
 const extracting = ref(false);
 const savingBatch = ref(false);
@@ -257,7 +249,6 @@ async function handleExtract() {
   try {
     const items = await api.extractWordsFromText(rawText.value);
     extractedItems.value = items;
-    // Auto-select words that are not already in the library
     const selected: Record<string, boolean> = {};
     items.forEach((item) => {
       if (!item.already_in_library) {

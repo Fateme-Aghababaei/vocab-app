@@ -13,7 +13,7 @@ export interface Word {
   repetitions: number;
   ease_factor: number;
   interval_days: number;
-  next_review_date: string; // ISO date
+  next_review_date: string;
   last_reviewed_at: string | null;
   created_at: string;
   updated_at: string;

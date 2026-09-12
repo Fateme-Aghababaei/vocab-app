@@ -30,7 +30,6 @@ export async function installApp() {
   }
 }
 
-// Keep development free of service-worker interception.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {

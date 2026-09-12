@@ -1,11 +1,6 @@
 import { definePreset } from "@primevue/themes";
 import Aura from "@primevue/themes/aura";
 
-// Primary = coral/pink accent, used for primary buttons, active nav items,
-// focus rings, and the "due now" signal across the app.
-// Secondary accent (warm yellow) is applied per-component (badges, progress
-// bars) rather than as PrimeVue's semantic "primary", since in this app
-// yellow plays a highlight role, not an action role.
 export const MementoPreset = definePreset(Aura, {
   semantic: {
     primary: {

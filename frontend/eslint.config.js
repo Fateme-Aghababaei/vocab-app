@@ -12,7 +12,6 @@ export default tseslint.config(
     extends: [...tseslint.configs.recommended],
     rules: {
       "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
-      // Existing API payloads use any; tightening their contracts is a separate change.
       "@typescript-eslint/no-explicit-any": "off",
     },
   },

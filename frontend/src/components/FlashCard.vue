@@ -5,7 +5,6 @@
         class="flip-card-inner relative w-full min-h-[22rem] sm:min-h-[24rem]"
         :class="{ 'is-flipped': flipped }"
       >
-        <!-- Front -->
         <div
           class="flip-card-face absolute inset-0 rounded-xl2 bg-white border border-stone-200 shadow-soft flex flex-col items-center justify-center text-center px-8 py-10 cursor-pointer"
           @click="!flipped && emit('flip')"
@@ -34,7 +33,6 @@
           </button>
         </div>
 
-        <!-- Back -->
         <div
           class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 bg-white border border-stone-200 shadow-soft flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
         >
@@ -65,7 +63,6 @@
                 :key="i"
                 class="flex items-start gap-2 text-sm text-stone-600 italic leading-relaxed"
               >
-                <!-- دکمه تلفظ برای هر جمله مثال -->
                 <SpeakButton
                   :text="ex"
                   size="sm"
@@ -110,7 +107,6 @@
       </div>
     </div>
 
-    <!-- Rating controls -->
     <div v-if="flipped" class="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
       <button
         v-for="r in ratings"

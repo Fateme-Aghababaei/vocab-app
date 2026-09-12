@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import "./services/pwa";
 import { createApp } from "vue";
 import { createPinia } from "pinia";
@@ -22,16 +21,13 @@ app.use(PrimeVue, {
   theme: {
     preset: MementoPreset,
     options: {
-      darkModeSelector: false, // light-only, per the brand palette
+      darkModeSelector: false,
     },
   },
 });
 app.use(ToastService);
 app.use(ConfirmationService);
 
-// Validate any stored token before the first render so a refresh doesn't
-// flash logged-in content for a stale/expired token. The router guard also
-// checks `initialized` as a safety net for any navigation that beats this.
 const authStore = useAuthStore();
 authStore.init().finally(() => {
   app.mount("#app");

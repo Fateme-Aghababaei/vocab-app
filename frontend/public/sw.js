@@ -1,4 +1,3 @@
-// Cache only the public offline page. Account data always goes to the API.
 const CACHE = "memento-offline-v2";
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.add("/offline.html")));

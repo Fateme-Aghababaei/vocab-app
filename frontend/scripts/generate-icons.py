@@ -1,10 +1,8 @@
-"""Render the Memento M mark to PNG with no third-party dependencies."""
 from pathlib import Path
 import struct
 import zlib
 
 OUTPUT = Path(__file__).resolve().parents[1] / "public" / "icons"
-# An M, within the central safe area for maskable icons.
 POLYGON = [(29, 71), (29, 30), (38, 30), (50, 51), (62, 30), (71, 30),
            (71, 71), (62, 71), (62, 47), (50, 67), (38, 47), (38, 71)]
 

@@ -9,12 +9,11 @@ export function useSpeech() {
       return;
     }
 
-    // متوقف کردن صدای قبلی برای تداخل نداشتن صداها
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
-    utterance.rate = 0.9; // سرعت ملایم و شمرده برای یادگیری دقیق لهجه
+    utterance.rate = 0.9;
 
     utterance.onstart = () => {
       isSpeaking.value = true;

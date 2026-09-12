@@ -21,7 +21,6 @@
       </button>
     </div>
 
-    <!-- Cards Grid -->
     <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
       <div
         v-for="rec in (store.recommendations as RecommendedWord[])"
@@ -29,7 +28,6 @@
         class="min-w-0 rounded-xl2 bg-white border border-stone-200 p-4 shadow-soft flex flex-col justify-between hover:border-pink-200 hover:bg-pink-50/40 hover:shadow-md hover:shadow-pink-100/50 transition-all duration-200 motion-reduce:transition-none group"
       >
         <div>
-          <!-- Header -->
           <div class="flex flex-col items-start gap-2 mb-2">
             <div class="flex w-full min-w-0 items-start gap-2">
               <h3 class="min-w-0 [overflow-wrap:anywhere] font-display font-bold text-lg text-stone-900 group-hover:text-pink-600 transition-colors">
@@ -40,12 +38,10 @@
             <DifficultyBadge :difficulty="rec.difficulty" class="shrink-0 whitespace-nowrap" />
           </div>
 
-          <!-- Definition -->
           <p class="[overflow-wrap:anywhere] text-xs text-stone-600 line-clamp-2 mb-3 leading-relaxed">
             {{ rec.definition }}
           </p>
 
-          <!-- Categories -->
           <div class="flex flex-wrap gap-1 mb-4">
             <CategoryChip v-for="c in rec.categories.slice(0, 1)" :key="c" class="min-w-0 max-w-full [overflow-wrap:anywhere]">
               {{ c }}
@@ -53,7 +49,6 @@
           </div>
         </div>
 
-        <!-- Action Button -->
         <button
           type="button"
           class="w-full rounded-full border border-stone-200 bg-stone-50 hover:bg-pink-50 hover:border-pink-300 text-stone-700 hover:text-pink-600 text-xs font-semibold py-2 transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"

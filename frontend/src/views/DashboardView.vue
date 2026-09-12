@@ -12,7 +12,6 @@
     <NotificationBanner />
     <RecommendedSection class="my-2" />
 
-    <!-- Hero: due today -->
     <section
       class="rounded-xl2 bg-pink-500 text-white px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
     >
@@ -41,7 +40,6 @@
       </button>
     </section>
 
-    <!-- Stat tiles -->
     <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div class="rounded-xl2 bg-white border border-stone-200 px-5 py-4">
         <p class="text-xs font-medium text-stone-400 mb-1">
@@ -78,7 +76,6 @@
     </section>
 
     <div class="grid lg:grid-cols-5 gap-6">
-      <!-- Difficulty breakdown -->
       <section class="lg:col-span-2 rounded-xl2 bg-white border border-stone-200 px-6 py-5">
         <h2 class="text-sm font-semibold text-stone-700 mb-4">
           Words by difficulty
@@ -96,7 +93,6 @@
         </div>
       </section>
 
-      <!-- Recently added -->
       <section class="lg:col-span-3 rounded-xl2 bg-white border border-stone-200 px-6 py-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-semibold text-stone-700">

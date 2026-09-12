@@ -9,7 +9,6 @@
       </p>
     </header>
 
-    <!-- Filters -->
     <section class="rounded-xl2 bg-white border border-stone-200 px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
       <span class="p-input-icon-left w-full sm:max-w-xs relative">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
@@ -49,7 +48,6 @@
       {{ resultCountLabel }}
     </p>
 
-    <!-- List -->
     <section v-if="store.words.length" class="flex flex-col gap-3">
       <div
         v-for="w in store.words"
@@ -98,7 +96,6 @@
       </p>
     </div>
 
-    <!-- Edit dialog -->
     <Dialog
       :visible="!!editing"
       modal
@@ -179,7 +176,6 @@ onMounted(async () => {
   await Promise.all([refresh(), store.fetchCategories()]);
 });
 
-// --- Edit dialog ---
 const editing = ref<Word | null>(null);
 const editForm = reactive<NewWordPayload>({
   word: "",

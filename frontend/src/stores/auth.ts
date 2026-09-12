@@ -6,17 +6,12 @@ import type { User } from "@/types";
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null as User | null,
-    // Tri-state: we don't know yet whether the stored token (if any) is
-    // still valid until /me/ resolves. The router guard waits on this.
     initialized: false,
   }),
   getters: {
     isAuthenticated: (state) => !!state.user,
   },
   actions: {
-    // Called once at app startup. If a token is stored, validate it against
-    // the backend so refreshing the page doesn't show a flash of "logged
-    // in" state for an expired/invalid token.
     async init() {
       const token = getToken();
       if (!token) {
@@ -49,8 +44,6 @@ export const useAuthStore = defineStore("auth", {
       try {
         await api.logout();
       } catch {
-        // Ignore network/auth errors on logout - we're clearing local state
-        // regardless so the user isn't stuck.
       }
       clearToken();
       this.user = null;

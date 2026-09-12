@@ -1,8 +1,5 @@
 import type { Word } from "@/types";
 
-// Mirrors backend words/srs.py closely enough to preview the *next* interval
-// for each rating button. The backend remains the source of truth; this is
-// purely a UX hint so the learner knows what "Good" vs "Easy" will do.
 function initialEase(difficulty: Word["difficulty"]): number {
   if (difficulty === "beginner") return 2.7;
   if (difficulty === "advanced") return 2.3;
@@ -23,7 +20,7 @@ export function previewIntervals(word: Word): Record<0 | 1 | 2 | 3, string> {
     : word.ease_factor;
   const base = word.interval_days >= 1 ? word.interval_days : 1;
 
-  const again = 10 / (24 * 60); // ~10 minutes, in days
+  const again = 10 / (24 * 60);
   const hard = Math.max(1, base * 1.2);
   let good: number;
   if (word.repetitions === 0) good = 1;

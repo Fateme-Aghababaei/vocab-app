@@ -10,13 +10,11 @@
     ]"
     @click="handleClick"
   >
-    <!-- ripple rings, only while speaking -->
     <template v-if="isSpeaking">
       <span class="absolute inset-0 rounded-full bg-pink-400/40 animate-speak-ring"></span>
       <span class="absolute inset-0 rounded-full bg-pink-400/40 animate-speak-ring [animation-delay:0.4s]"></span>
     </template>
 
-    <!-- آیکون بلندگوی پیش‌فرض -->
     <svg
       v-if="!isSpeaking"
       xmlns="http://www.w3.org/2000/svg"
@@ -33,7 +31,6 @@
       />
     </svg>
 
-    <!-- آیکون هنگام پخش صدا: بلندگو ثابت + امواج متحرک -->
     <svg
       v-else
       xmlns="http://www.w3.org/2000/svg"
