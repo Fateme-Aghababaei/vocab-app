@@ -9,7 +9,7 @@
     <div v-else class="flex min-h-screen">
       <!-- Desktop sidebar -->
       <aside
-        class="hidden md:flex md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
+        class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-stone-200 bg-white px-5 py-6"
       >
         <div class="flex items-center gap-2.5 px-2 mb-8">
           <div
