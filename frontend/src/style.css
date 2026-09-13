@@ -25,6 +25,12 @@
   }
 }
 
+@layer components {
+  .header-action {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-sm text-stone-400 transition-colors hover:border-stone-300 hover:text-stone-700 disabled:cursor-wait disabled:opacity-50;
+  }
+}
+
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;

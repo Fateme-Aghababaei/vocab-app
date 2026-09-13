@@ -70,27 +70,39 @@
         </div>
       </aside>
 
-      <header
-        class="mobile-header md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-white border-b border-stone-200 px-4 py-3"
-      >
-        <div class="flex items-center gap-2">
-          <img src="/memento.png" alt="" class="w-7 h-7 shrink-0 object-contain" />
-          <span class="font-display text-base font-semibold text-stone-900">Memento</span>
-        </div>
-        <button
-          type="button"
-          class="text-stone-400 hover:text-pink-600 transition-colors p-1.5"
-          aria-label="Log out"
-          @click="handleLogout"
-        >
-          <i class="pi pi-sign-out"></i>
-        </button>
-      </header>
-
       <main class="flex flex-1 min-w-0 flex-col">
-        <div class="flex flex-1 flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(4rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
+        <header
+          class="mobile-header fixed top-0 inset-x-0 z-40 flex min-h-16 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 md:hidden sm:px-6"
+        >
+          <div class="flex min-w-0 items-center gap-2">
+            <img src="/memento.png" alt="" class="h-7 w-7 shrink-0 object-contain md:hidden" />
+            <span class="font-display text-base font-semibold text-stone-900 md:hidden">Memento</span>
+          </div>
+          <div class="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              class="header-action md:hidden"
+              aria-label="Log out"
+              title="Log out"
+              @click="handleLogout"
+            >
+              <i class="pi pi-sign-out" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <div class="flex flex-1 flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(5.5rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
           <div class="flex-1 min-w-0">
-            <InstallApp />
+            <header class="mb-6">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h1 class="text-2xl font-semibold">
+                  {{ route.meta.title }}
+                </h1>
+                <HeaderActions />
+              </div>
+              <p v-if="route.meta.description" class="mt-1 text-stone-500">
+                {{ route.meta.description }}
+              </p>
+            </header>
             <router-view />
           </div>
           <AppFooter class="mt-2" />
@@ -123,7 +135,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import InstallApp from "@/components/InstallApp.vue";
+import HeaderActions from "@/components/HeaderActions.vue";
 import AppFooter from "@/components/AppFooter.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";

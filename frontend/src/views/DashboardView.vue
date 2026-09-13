@@ -1,17 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <header>
-      <h1 class="text-2xl font-semibold">
-        Good to see you
-      </h1>
-      <p class="text-stone-500 mt-1">
-        Here&rsquo;s what your vocabulary practice looks like today.
-      </p>
-    </header>
-
-    <NotificationBanner />
-    <RecommendedSection class="my-2" />
-
     <section
       class="rounded-xl2 bg-pink-500 text-white px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
     >
@@ -75,6 +63,8 @@
       </div>
     </section>
 
+    <RecommendedSection />
+
     <div class="grid lg:grid-cols-5 gap-6">
       <section class="lg:col-span-2 rounded-xl2 bg-white border border-stone-200 px-6 py-5">
         <h2 class="text-sm font-semibold text-stone-700 mb-4">
@@ -126,7 +116,6 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useWordsStore } from "@/stores/words";
-import NotificationBanner from "@/components/NotificationBanner.vue";
 import { useNotifications } from "../composables/useNotifications";
 import RecommendedSection from "@/components/RecommendedSection.vue";
 

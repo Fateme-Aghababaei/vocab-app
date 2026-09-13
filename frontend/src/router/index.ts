@@ -20,21 +20,25 @@ const router = createRouter({
       path: "/",
       name: "dashboard",
       component: () => import("@/views/DashboardView.vue"),
+      meta: { title: "Good to see you", description: "Here’s what your vocabulary practice looks like today." },
     },
     {
       path: "/review",
       name: "review",
       component: () => import("@/views/ReviewView.vue"),
+      meta: { title: "Review", description: "" },
     },
     {
       path: "/library",
       name: "library",
       component: () => import("@/views/LibraryView.vue"),
+      meta: { title: "Library", description: "Browse, search, and fine-tune everything you’ve saved." },
     },
     {
       path: "/add",
       name: "add-word",
       component: () => import("@/views/AddWordView.vue"),
+      meta: { title: "Add Vocabulary", description: "Look up a single word or extract key vocabulary from real-world text." },
     },
   ],
 });

@@ -1,14 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <header>
-      <h1 class="text-2xl font-semibold">
-        Library
-      </h1>
-      <p class="text-stone-500 mt-1">
-        Browse, search, and fine-tune everything you've saved.
-      </p>
-    </header>
-
     <section class="rounded-xl2 bg-white border border-stone-200 px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
       <IconField class="w-full sm:max-w-xs">
         <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
