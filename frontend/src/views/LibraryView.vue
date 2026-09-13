@@ -1,9 +1,14 @@
 <template>
   <div class="flex flex-col gap-6">
-    <section class="rounded-xl2 bg-white border border-stone-200 px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+    <section class="rounded-xl2 bg-surface border border-line px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
       <IconField class="w-full sm:max-w-xs">
         <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
-        <InputText v-model="search" placeholder="Search words" aria-label="Search words" class="w-full" />
+        <InputText
+          v-model="search"
+          placeholder="Search words"
+          aria-label="Search words"
+          class="w-full"
+        />
       </IconField>
       <Select
         v-model="categoryFilter"
@@ -26,8 +31,8 @@
         class="rounded-full px-4 py-2 text-sm font-medium border transition-colors whitespace-nowrap"
         :class="
           dueOnly
-            ? 'bg-pink-500 border-pink-500 text-white'
-            : 'bg-white border-stone-200 text-stone-600 hover:border-pink-300'
+            ? 'bg-primary border-primary text-on-primary'
+            : 'bg-surface border-line text-secondary hover:border-accent-line-strong'
         "
         @click="dueOnly = !dueOnly"
       >
@@ -35,7 +40,7 @@
       </button>
     </section>
 
-    <p class="text-xs text-stone-400 -mt-2">
+    <p class="text-xs text-faint -mt-2">
       {{ resultCountLabel }}
     </p>
 
@@ -43,19 +48,19 @@
       <div
         v-for="w in store.words"
         :key="w.id"
-        class="rounded-xl2 bg-white border border-stone-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-pink-200 transition-colors cursor-pointer"
+        class="rounded-xl2 bg-surface border border-line px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
         @click="openEdit(w)"
       >
         <div class="flex items-center gap-2 sm:w-48 shrink-0">
           <span
             v-if="w.is_due"
-            class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"
+            class="w-2 h-2 rounded-full bg-warning shrink-0"
             title="Due for review"
           ></span>
-          <span class="font-display text-lg font-semibold text-stone-900 truncate">{{ w.word }}</span>
+          <span class="font-display text-lg font-semibold text-heading truncate">{{ w.word }}</span>
           <SpeakButton :text="w.word" size="sm" />
         </div>
-        <p class="text-sm text-stone-500 line-clamp-2 flex-1 min-w-0">
+        <p class="text-sm text-quiet line-clamp-2 flex-1 min-w-0">
           {{ w.definition }}
         </p>
         <div class="flex items-center gap-2 flex-wrap shrink-0">
@@ -66,7 +71,7 @@
         </div>
         <button
           type="button"
-          class="text-stone-300 hover:text-pink-600 transition-colors shrink-0"
+          class="text-faint hover:text-accent transition-colors shrink-0"
           aria-label="Delete word"
           @click.stop="confirmDelete(w)"
         >
@@ -75,13 +80,13 @@
       </div>
     </section>
 
-    <div v-else class="rounded-xl2 bg-white border border-stone-200 px-8 py-16 text-center flex flex-col items-center gap-3">
-      <p class="font-display text-xl font-semibold text-stone-900">
+    <div v-else class="rounded-xl2 bg-surface border border-line px-8 py-16 text-center flex flex-col items-center gap-3">
+      <p class="font-display text-xl font-semibold text-heading">
         No words match yet
       </p>
-      <p class="text-stone-500 text-sm max-w-sm">
+      <p class="text-quiet text-sm max-w-sm">
         Try clearing your filters, or
-        <router-link to="/add" class="text-pink-600 font-medium">
+        <router-link to="/add" class="text-accent font-medium">
           add a new word
         </router-link>.
       </p>
@@ -99,14 +104,14 @@
       <template #footer>
         <button
           type="button"
-          class="rounded-full bg-white border border-stone-200 text-stone-600 hover:bg-stone-100 text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
+          class="rounded-full bg-surface border border-line text-secondary hover:bg-subtle text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
           @click="editing = null"
         >
           Cancel
         </button>
         <button
           type="button"
-          class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
+          class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
           :disabled="savingEdit"
           @click="saveEdit"
         >

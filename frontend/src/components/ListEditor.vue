@@ -31,7 +31,7 @@
       icon="pi pi-plus"
       text
       size="small"
-      class="self-start !text-pink-600"
+      class="self-start !text-accent"
       @click="add"
     />
   </div>

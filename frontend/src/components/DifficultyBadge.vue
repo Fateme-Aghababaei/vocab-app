@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium"
+    class="inline-flex items-center gap-1.5 rounded-full bg-subtle px-2.5 py-1 text-xs font-medium"
     :class="config.text"
   >
     <span class="w-1.5 h-1.5 rounded-full" :class="config.dot"></span>
@@ -17,11 +17,11 @@ const props = defineProps<{ difficulty: Difficulty }>();
 const config = computed(() => {
   switch (props.difficulty) {
     case "beginner":
-      return { label: "Beginner", dot: "bg-stone-400", text: "text-stone-600" };
+      return { label: "Beginner", dot: "bg-dot-neutral", text: "text-secondary" };
     case "advanced":
-      return { label: "Advanced", dot: "bg-pink-500", text: "text-pink-700" };
+      return { label: "Advanced", dot: "bg-primary", text: "text-accent-strong" };
     default:
-      return { label: "Intermediate", dot: "bg-yellow-500", text: "text-yellow-800" };
+      return { label: "Intermediate", dot: "bg-warning-bright", text: "text-warning-ink" };
   }
 });
 </script>

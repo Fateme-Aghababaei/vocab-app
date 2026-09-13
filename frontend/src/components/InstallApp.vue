@@ -17,7 +17,7 @@
     header="Install Memento"
     class="mx-4 w-full max-w-sm"
   >
-    <p class="text-sm leading-relaxed text-stone-600">
+    <p class="text-sm leading-relaxed text-secondary">
       On iPhone, open this site in Safari, tap Share, then Add to Home Screen. On Android, open the browser menu and choose Install app or Add to Home screen. On desktop, look for the install option in your browser’s address bar or menu.
     </p>
   </Dialog>

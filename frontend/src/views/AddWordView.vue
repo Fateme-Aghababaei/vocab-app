@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex w-full min-w-0 flex-col gap-6">
-      <div class="flex items-center gap-2 p-1 rounded-xl bg-stone-200/70 w-fit">
+      <div class="flex items-center gap-2 p-1 rounded-xl bg-muted/70 w-fit">
         <button
           type="button"
           class="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-          :class="activeTab === 'single' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600 hover:text-stone-900'"
+          :class="activeTab === 'single' ? 'bg-surface text-heading shadow-sm' : 'text-secondary hover:text-heading'"
           @click="activeTab = 'single'"
         >
           <i class="pi pi-pencil mr-1.5 text-xs"></i>Single Word
@@ -13,17 +13,17 @@
         <button
           type="button"
           class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5"
-          :class="activeTab === 'extract' ? 'bg-white text-pink-600 shadow-sm' : 'text-stone-600 hover:text-stone-900'"
+          :class="activeTab === 'extract' ? 'bg-surface text-accent shadow-sm' : 'text-secondary hover:text-heading'"
           @click="activeTab = 'extract'"
         >
-          <i class="pi pi-sparkles text-xs text-pink-500"></i>
+          <i class="pi pi-sparkles text-xs text-accent"></i>
           <span>Learn From Anything</span>
-          <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-pink-100 text-pink-700">AI</span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-accent-muted text-accent-strong">AI</span>
         </button>
       </div>
 
       <div v-if="activeTab === 'single'" class="flex flex-col gap-6">
-        <section class="rounded-xl2 bg-white border border-stone-200 p-5 shadow-soft flex flex-col sm:flex-row gap-3">
+        <section class="rounded-xl2 bg-surface border border-line p-5 shadow-soft flex flex-col sm:flex-row gap-3">
           <InputText
             v-model="wordInput"
             placeholder="e.g. serendipity, call it a day..."
@@ -32,7 +32,7 @@
           />
           <button
             type="button"
-            class="rounded-full bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             :disabled="!wordInput.trim() || generating"
             @click="handleGenerate"
           >
@@ -42,12 +42,12 @@
           </button>
         </section>
 
-        <section v-if="form.word" class="rounded-xl2 bg-white border border-stone-200 p-6 shadow-soft flex flex-col gap-5">
+        <section v-if="form.word" class="rounded-xl2 bg-surface border border-line p-6 shadow-soft flex flex-col gap-5">
           <WordForm :model-value="form" @update:model-value="(v) => Object.assign(form, v)" />
-          <div class="flex justify-end gap-3 pt-4 border-t border-stone-100">
+          <div class="flex justify-end gap-3 pt-4 border-t border-line-soft">
             <button
               type="button"
-              class="rounded-full bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2.5 transition-all disabled:opacity-50"
+              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all disabled:opacity-50"
               :disabled="saving"
               @click="handleSaveSingle"
             >
@@ -58,8 +58,8 @@
       </div>
 
       <div v-else class="flex flex-col gap-6">
-        <section class="rounded-xl2 bg-white border border-stone-200 p-5 shadow-soft flex flex-col gap-4">
-          <label class="font-medium text-sm text-stone-700">
+        <section class="rounded-xl2 bg-surface border border-line p-5 shadow-soft flex flex-col gap-4">
+          <label class="font-medium text-sm text-copy">
             Paste an article snippet, email, tweet, or book passage:
           </label>
           <Textarea
@@ -69,10 +69,10 @@
             class="w-full text-sm leading-relaxed p-3"
           />
           <div class="flex justify-between items-center">
-            <span class="text-xs text-stone-400">{{ rawText.length }} characters</span>
+            <span class="text-xs text-faint">{{ rawText.length }} characters</span>
             <button
               type="button"
-              class="rounded-full bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2.5 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
+              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
               :disabled="rawText.trim().length < 15 || extracting"
               @click="handleExtract"
             >
@@ -85,12 +85,12 @@
 
         <section v-if="extractedItems.length" class="flex flex-col gap-4">
           <div class="flex items-center justify-between">
-            <h2 class="font-display font-semibold text-lg text-stone-900">
+            <h2 class="font-display font-semibold text-lg text-heading">
               Extracted Words ({{ extractedItems.length }})
             </h2>
             <button
               type="button"
-              class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold px-5 py-2 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-xs font-semibold px-5 py-2 transition-all flex items-center gap-1.5 disabled:opacity-50"
               :disabled="selectedCount() === 0 || savingBatch"
               @click="handleSaveBatch"
             >
@@ -104,21 +104,21 @@
             <div
               v-for="item in extractedItems"
               :key="item.word"
-              class="rounded-xl bg-white border p-4 shadow-sm transition-all flex items-start gap-3.5"
-              :class="selectedItems[item.word] ? 'border-pink-300 ring-1 ring-pink-300' : 'border-stone-200 opacity-80'"
+              class="rounded-xl bg-surface border p-4 shadow-sm transition-all flex items-start gap-3.5"
+              :class="selectedItems[item.word] ? 'border-accent-line-strong ring-1 ring-accent-line-strong' : 'border-line opacity-80'"
             >
               <input
                 v-if="!item.already_in_library"
                 v-model="selectedItems[item.word]"
                 type="checkbox"
-                class="mt-1 w-4 h-4 shrink-0 rounded accent-pink-500 focus-visible:outline-pink-500 cursor-pointer"
+                class="mt-1 w-4 h-4 shrink-0 rounded accent-primary focus-visible:outline-accent cursor-pointer"
               />
-              <span v-else class="mt-1 text-xs px-2 py-0.5 rounded bg-stone-100 text-stone-500 font-medium">Saved</span>
+              <span v-else class="mt-1 text-xs px-2 py-0.5 rounded bg-subtle text-quiet font-medium">Saved</span>
 
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2 mb-1">
                   <div class="flex items-center gap-2">
-                    <h3 class="font-display font-bold text-lg text-stone-900">
+                    <h3 class="font-display font-bold text-lg text-heading">
                       {{ item.word }}
                     </h3>
                     <SpeakButton :text="item.word" size="sm" />
@@ -126,11 +126,11 @@
                   <DifficultyBadge :difficulty="item.difficulty" />
                 </div>
 
-                <p class="text-sm text-stone-700 mb-2">
+                <p class="text-sm text-copy mb-2">
                   {{ item.definition }}
                 </p>
 
-                <div v-if="item.context_sentence" class="bg-yellow-50/70 border-l-2 border-yellow-400 px-3 py-1.5 rounded-r text-xs text-stone-700 italic mb-2">
+                <div v-if="item.context_sentence" class="bg-warning-soft/70 border-l-2 border-warning px-3 py-1.5 rounded-r text-xs text-copy italic mb-2">
                   &ldquo;{{ item.context_sentence }}&rdquo;
                 </div>
 

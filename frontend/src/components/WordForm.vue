@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1.5" for="word">Word</label>
+      <label class="block text-sm font-medium text-copy mb-1.5" for="word">Word</label>
       <InputText
         id="word"
         v-model="form.word"
@@ -11,7 +11,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1.5" for="pronunciation">
+      <label class="block text-sm font-medium text-copy mb-1.5" for="pronunciation">
         Pronunciation (US English IPA)
       </label>
       <InputText
@@ -23,14 +23,14 @@
         :spellcheck="false"
         aria-describedby="pronunciation-help"
       />
-      <p id="pronunciation-help" class="text-xs text-stone-400 mt-1.5">
+      <p id="pronunciation-help" class="text-xs text-faint mt-1.5">
         Optional. Phonetic symbols show how the word sounds. You can edit the generated pronunciation.
       </p>
     </div>
 
     <div>
       <label
-        class="block text-sm font-medium text-stone-700 mb-1.5"
+        class="block text-sm font-medium text-copy mb-1.5"
         for="definition"
       >Definition</label>
       <Textarea
@@ -44,7 +44,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1.5">Example sentences</label>
+      <label class="block text-sm font-medium text-copy mb-1.5">Example sentences</label>
       <ListEditor
         v-model="form.examples"
         multiline
@@ -55,7 +55,7 @@
 
     <div>
       <label
-        class="block text-sm font-medium text-stone-700 mb-1.5"
+        class="block text-sm font-medium text-copy mb-1.5"
         for="usage_notes"
       >Usage notes</label>
       <Textarea
@@ -69,14 +69,14 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1.5">Common collocations</label>
+      <label class="block text-sm font-medium text-copy mb-1.5">Common collocations</label>
       <ListEditor v-model="form.collocations" placeholder="e.g. deeply resilient" add-label="Add phrase" />
     </div>
 
     <div class="grid sm:grid-cols-2 gap-6">
       <div>
         <label
-          class="block text-sm font-medium text-stone-700 mb-1.5"
+          class="block text-sm font-medium text-copy mb-1.5"
           for="difficulty"
         >Difficulty</label>
         <Select
@@ -91,7 +91,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1.5">Categories</label>
+      <label class="block text-sm font-medium text-copy mb-1.5">Categories</label>
       <CategoryPicker v-model="form.categories" :suggestions="store.categories" />
     </div>
   </div>
