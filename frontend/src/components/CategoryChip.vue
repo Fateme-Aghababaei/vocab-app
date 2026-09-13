@@ -1,12 +1,12 @@
 <template>
   <span
-    class="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-600"
+    class="inline-flex items-center gap-1 rounded-full border border-line glass-control px-2.5 py-1 text-xs font-medium text-secondary"
   >
     <slot></slot>
     <button
       v-if="removable"
       type="button"
-      class="ml-0.5 text-stone-400 hover:text-pink-600 transition-colors"
+      class="ml-0.5 text-faint hover:text-accent transition-colors"
       aria-label="Remove"
       @click="$emit('remove')"
     >

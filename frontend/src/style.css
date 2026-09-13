@@ -1,3 +1,5 @@
+@import "./theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,21 +9,48 @@
     @apply antialiased;
   }
   body {
-    @apply bg-stone-50 text-stone-800 font-sans;
+    @apply bg-canvas text-body font-sans;
     font-feature-settings: "cv11", "ss01";
   }
   h1,
   h2,
   h3 {
-    @apply font-display text-stone-900;
+    @apply font-display text-heading;
   }
   ::selection {
-    @apply bg-yellow-300 text-stone-900;
+    @apply bg-selection text-heading;
   }
   :focus-visible {
-    outline: 2px solid #ef476f;
+    outline: 2px solid rgb(var(--color-accent));
     outline-offset: 2px;
     border-radius: 4px;
+  }
+}
+
+@layer components {
+  .glass-control {
+    --glass-fill: var(--color-surface);
+    --glass-alpha: var(--glass-opacity);
+    background-color: rgb(var(--glass-fill) / var(--glass-alpha));
+    background-image: linear-gradient(145deg, rgb(var(--glass-edge) / var(--glass-edge-opacity)), transparent 65%);
+    box-shadow: inset 0 1px 0 rgb(var(--glass-edge) / var(--glass-edge-opacity));
+  }
+
+  .app-backdrop {
+    background-color: rgb(var(--color-canvas));
+    background-image:
+      radial-gradient(ellipse at 12% 12%, rgb(var(--color-accent-glow) / var(--glass-glow-opacity)), transparent 48%),
+      radial-gradient(ellipse at 90% 65%, rgb(var(--color-accent) / var(--glass-glow-opacity)), transparent 48%);
+    background-attachment: fixed;
+  }
+
+  .app-logo {
+    filter: var(--logo-filter);
+    mix-blend-mode: var(--logo-blend);
+  }
+
+  .header-action {
+    @apply glass-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-sm text-faint transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50;
   }
 }
 
@@ -61,4 +90,62 @@ body {
 @media (max-width: 767px) {
   .mobile-header { padding-top: calc(0.75rem + env(safe-area-inset-top)); padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
   .mobile-nav { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); padding-left: max(0.5rem, env(safe-area-inset-left)); padding-right: max(0.5rem, env(safe-area-inset-right)); }
+}
+
+/* One glass surface system for app components and PrimeVue overlays. */
+:root :is(.glass-panel, .p-dialog, .p-select-overlay, .p-multiselect-overlay, .p-popover, .p-toast-message) {
+  --glass-fill: var(--color-surface);
+  --glass-alpha: var(--glass-opacity);
+  background-color: rgb(var(--glass-fill));
+  background-image: linear-gradient(145deg, rgb(var(--glass-edge) / var(--glass-edge-opacity)), transparent 55%);
+  border-color: rgb(var(--color-line));
+  box-shadow: inset 0 1px 0 rgb(var(--glass-edge) / var(--glass-edge-opacity)),
+    0 8px 28px -12px rgb(var(--glass-shadow) / var(--glass-shadow-opacity));
+}
+
+:root :is(.p-dialog, .p-select-overlay, .p-multiselect-overlay, .p-popover, .p-toast-message) {
+  --glass-alpha: 0.90;
+}
+
+:root :is(.p-inputtext, .p-textarea, .p-select, .p-multiselect):not(:disabled):not(.p-disabled) {
+  background: rgb(var(--color-surface) / var(--glass-opacity));
+  box-shadow: inset 0 1px 0 rgb(var(--glass-edge) / var(--glass-edge-opacity));
+}
+
+/* Keep PrimeVue button semantics while sharing the surface highlight. */
+:root .p-button {
+  background-image: linear-gradient(145deg, rgb(var(--glass-edge) / var(--glass-edge-opacity)), transparent 65%);
+  box-shadow: inset 0 1px 0 rgb(var(--glass-edge) / var(--glass-edge-opacity));
+}
+
+:root .glass-primary {
+  --glass-fill: var(--color-primary);
+  --glass-alpha: 0.92;
+  border-color: rgb(var(--color-accent-line-strong));
+}
+:root .glass-warning {
+  --glass-fill: var(--color-warning-soft);
+  border-color: rgb(var(--color-warning-line));
+}
+:root .glass-accent {
+  --glass-fill: var(--color-accent-muted);
+  border-color: rgb(var(--color-accent-line));
+}
+
+@supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
+  :root :is(.glass-panel, .p-dialog, .p-select-overlay, .p-multiselect-overlay, .p-popover, .p-toast-message) {
+    background-color: rgb(var(--glass-fill) / var(--glass-alpha));
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root :is(.glass-panel, .glass-control, .header-action, .p-dialog, .p-select-overlay, .p-multiselect-overlay, .p-popover, .p-toast-message, .p-inputtext, .p-textarea, .p-select, .p-multiselect) {
+    background-color: rgb(var(--glass-fill, var(--color-surface)));
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .app-backdrop { background-image: none; }
 }

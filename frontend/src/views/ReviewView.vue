@@ -1,69 +1,62 @@
 <template>
-  <div class="max-w-xl mx-auto flex flex-col gap-5">
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold">
-          Review
-        </h1>
-        <p class="text-stone-500 text-sm mt-0.5">
+  <div class="flex flex-col gap-6">
+    <div class="mx-auto flex w-full max-w-xl flex-col gap-5">
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-sm text-quiet">
           {{ sessionTotal > 0 ? `${reviewedCount} of ${sessionTotal} reviewed` : "" }}
         </p>
-      </div>
-      <router-link
-        to="/add"
-        class="text-sm font-medium text-pink-600 hover:text-pink-700"
-      >
-        + Add word
-      </router-link>
-    </header>
-
-    <div v-if="sessionTotal > 0" class="h-1.5 rounded-full bg-stone-100 overflow-hidden">
-      <div
-        class="h-full bg-pink-500 rounded-full transition-all duration-300"
-        :style="{ width: progressPct + '%' }"
-      ></div>
-    </div>
-
-    <div v-if="loading" class="py-24 text-center text-stone-400">
-      Loading your review queue&hellip;
-    </div>
-
-    <FlashCard
-      v-else-if="currentWord"
-      :key="currentWord.id"
-      :word="currentWord"
-      :flipped="flipped"
-      @flip="handleFlip"
-      @rate="handleRate"
-    />
-
-    <div v-else class="rounded-xl2 bg-white border border-stone-200 px-8 py-16 text-center flex flex-col items-center gap-3">
-      <div class="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mb-1">
-        <i class="pi pi-check text-2xl"></i>
-      </div>
-      <h2 class="font-display text-xl font-semibold text-stone-900">
-        {{ sessionTotal > 0 ? "Nice work — you're all caught up" : "Nothing due right now" }}
-      </h2>
-      <p class="text-stone-500 text-sm max-w-sm">
-        {{
-          sessionTotal > 0
-            ? "You've reviewed every word that was due today. Come back tomorrow, or add more words to your list."
-            : "New and overdue words will show up here when it's time to review them."
-        }}
-      </p>
-      <div class="flex gap-3 mt-2">
-        <router-link
-          to="/add"
-          class="rounded-full bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
-        >
-          Add a word
+        <router-link to="/add" class="text-sm font-medium text-accent hover:text-accent-strong">
+          + Add word
         </router-link>
-        <router-link
-          to="/library"
-          class="rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold px-5 py-2.5 transition-colors"
-        >
-          Browse library
-        </router-link>
+      </div>
+      <div v-if="sessionTotal > 0" class="h-1.5 rounded-full bg-subtle overflow-hidden">
+        <div
+          class="h-full bg-primary rounded-full transition-all duration-300"
+          :style="{ width: progressPct + '%' }"
+        ></div>
+      </div>
+
+      <div v-if="loading" class="py-24 text-center text-faint">
+        Loading your review queue&hellip;
+      </div>
+
+      <FlashCard
+        v-else-if="currentWord"
+        :key="currentWord.id"
+        :word="currentWord"
+        :flipped="flipped"
+        @flip="handleFlip"
+        @rate="handleRate"
+      />
+
+      <div v-else class="rounded-xl2 glass-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
+        <div class="w-14 h-14 rounded-full bg-warning-muted flex items-center justify-center text-warning-icon mb-1">
+          <i class="pi pi-check text-2xl"></i>
+        </div>
+        <h2 class="font-display text-xl font-semibold text-heading">
+          {{ sessionTotal > 0 ? "Nice work — you're all caught up" : "Nothing due right now" }}
+        </h2>
+        <p class="text-quiet text-sm max-w-sm">
+          {{
+            sessionTotal > 0
+              ? "You've reviewed every word that was due today. Come back tomorrow, or add more words to your list."
+              : "New and overdue words will show up here when it's time to review them."
+          }}
+        </p>
+        <div class="flex gap-3 mt-2">
+          <router-link
+            to="/add"
+            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
+          >
+            Add a word
+          </router-link>
+          <router-link
+            to="/library"
+            class="rounded-full glass-control hover:bg-muted text-copy text-sm font-semibold px-5 py-2.5 transition-colors"
+          >
+            Browse library
+          </router-link>
+        </div>
       </div>
     </div>
   </div>

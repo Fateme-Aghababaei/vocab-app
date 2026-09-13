@@ -21,7 +21,7 @@ app.use(PrimeVue, {
   theme: {
     preset: MementoPreset,
     options: {
-      darkModeSelector: false,
+      darkModeSelector: '[data-theme="dark"]',
     },
   },
 });

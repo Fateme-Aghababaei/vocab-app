@@ -3,16 +3,16 @@
     type="button"
     :title="title"
     :aria-label="title"
-    class="relative inline-flex items-center justify-center rounded-full transition-all duration-200 text-stone-500 hover:text-pink-600 hover:bg-pink-50 active:scale-95 shadow-sm"
+    class="relative inline-flex items-center justify-center rounded-full transition-all duration-200 text-quiet hover:text-accent hover:bg-accent-soft active:scale-95 shadow-sm"
     :class="[
       size === 'sm' ? 'w-7 h-7' : size === 'lg' ? 'w-11 h-11' : 'w-9 h-9',
-      isSpeaking ? 'text-pink-600 bg-pink-100' : 'bg-stone-100',
+      isSpeaking ? 'text-accent bg-accent-muted' : 'glass-control',
     ]"
     @click="handleClick"
   >
     <template v-if="isSpeaking">
-      <span class="absolute inset-0 rounded-full bg-pink-400/40 animate-speak-ring"></span>
-      <span class="absolute inset-0 rounded-full bg-pink-400/40 animate-speak-ring [animation-delay:0.4s]"></span>
+      <span class="absolute inset-0 rounded-full bg-accent-glow/40 animate-speak-ring"></span>
+      <span class="absolute inset-0 rounded-full bg-accent-glow/40 animate-speak-ring [animation-delay:0.4s]"></span>
     </template>
 
     <svg
@@ -36,7 +36,7 @@
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="currentColor"
-      class="relative z-10 text-pink-600"
+      class="relative z-10 text-accent"
       :class="size === 'sm' ? 'w-3.5 h-3.5' : size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'"
     >
       <path

@@ -8,8 +8,8 @@
         class="rounded-full px-3 py-1.5 text-xs font-medium border transition-colors"
         :class="
           modelValue.includes(cat)
-            ? 'bg-pink-500 border-pink-500 text-white'
-            : 'bg-white border-stone-200 text-stone-600 hover:border-pink-300 hover:text-pink-600'
+            ? 'glass-control glass-primary border-primary text-on-primary'
+            : 'glass-control border-line text-secondary hover:border-accent-line-strong hover:text-accent'
         "
         @click="toggle(cat)"
       >
@@ -28,7 +28,7 @@
         label="Add"
         text
         size="small"
-        class="!text-pink-600"
+        class="!text-accent"
         @click="addCustom"
       />
     </div>

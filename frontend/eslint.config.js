@@ -45,6 +45,10 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    files: ["public/theme-init.js"],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ["public/**/*.js"],
     languageOptions: { globals: globals.serviceworker },
   },

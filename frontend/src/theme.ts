@@ -17,6 +17,34 @@ export const MementoPreset = definePreset(Aura, {
       950: "#4a0617",
     },
     colorScheme: {
+      dark: {
+        surface: {
+          0: "rgb(var(--color-on-primary))",
+          50: "rgb(var(--color-heading))",
+          100: "rgb(var(--color-body))",
+          200: "rgb(var(--color-copy))",
+          300: "rgb(var(--color-secondary))",
+          400: "rgb(var(--color-quiet))",
+          500: "rgb(var(--color-chart-neutral))",
+          600: "rgb(var(--color-line-strong))",
+          700: "rgb(var(--color-line))",
+          800: "rgb(var(--color-subtle))",
+          900: "rgb(var(--color-surface))",
+          950: "rgb(var(--color-canvas))",
+        },
+        primary: {
+          color: "rgb(var(--color-primary))",
+          contrastColor: "rgb(var(--color-on-primary))",
+          hoverColor: "rgb(var(--color-primary-hover))",
+          activeColor: "#914e5e",
+        },
+        highlight: {
+          background: "rgb(var(--color-accent-muted))",
+          focusBackground: "rgb(var(--color-accent-line))",
+          color: "rgb(var(--color-accent-strong))",
+          focusColor: "rgb(var(--color-accent-strong))",
+        },
+      },
       light: {
         surface: {
           0: "#ffffff",
