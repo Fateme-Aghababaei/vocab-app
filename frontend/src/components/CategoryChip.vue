@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center gap-1 rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-medium text-secondary"
+    class="inline-flex items-center gap-1 rounded-full border border-line glass-control px-2.5 py-1 text-xs font-medium text-secondary"
   >
     <slot></slot>
     <button

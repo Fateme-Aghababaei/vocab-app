@@ -8,8 +8,8 @@
         class="rounded-full px-3 py-1.5 text-xs font-medium border transition-colors"
         :class="
           modelValue.includes(cat)
-            ? 'bg-primary border-primary text-on-primary'
-            : 'bg-surface border-line text-secondary hover:border-accent-line-strong hover:text-accent'
+            ? 'glass-control glass-primary border-primary text-on-primary'
+            : 'glass-control border-line text-secondary hover:border-accent-line-strong hover:text-accent'
         "
         @click="toggle(cat)"
       >

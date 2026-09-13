@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-dvh bg-canvas text-body">
+  <div class="app-backdrop min-h-dvh text-body">
     <svg class="absolute h-0 w-0" aria-hidden="true" focusable="false">
       <defs>
         <!-- Preserve RGB; remove neutral white using the logo's red/blue separation. -->
@@ -24,7 +24,7 @@
 
     <div v-else class="flex min-h-dvh">
       <aside
-        class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-line bg-surface px-5 py-6"
+        class="hidden md:sticky md:top-0 md:flex md:h-dvh md:self-start md:flex-col md:w-64 md:shrink-0 border-r border-line glass-panel px-5 py-6"
       >
         <div class="flex items-center gap-2.5 px-2 mb-8">
           <img src="/memento.png" alt="" class="app-logo w-8 h-8 shrink-0 object-contain" />
@@ -86,7 +86,7 @@
 
       <main class="flex flex-1 min-w-0 flex-col">
         <header
-          class="mobile-header fixed top-0 inset-x-0 z-40 flex min-h-16 items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3 md:hidden sm:px-6"
+          class="mobile-header fixed top-0 inset-x-0 z-40 flex min-h-16 items-center justify-between gap-3 border-b border-line glass-panel px-4 py-3 md:hidden sm:px-6"
         >
           <div class="flex min-w-0 items-center gap-2">
             <img src="/memento.png" alt="" class="app-logo h-7 w-7 shrink-0 object-contain md:hidden" />
@@ -126,7 +126,7 @@
 
     <nav
       v-if="!isPublicRoute"
-      class="mobile-nav md:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-line flex justify-around items-center py-2 px-2 z-40"
+      class="mobile-nav md:hidden fixed bottom-0 inset-x-0 glass-panel border-t border-line flex justify-around items-center py-2 px-2 z-40"
     >
       <router-link
         v-for="item in navItems"

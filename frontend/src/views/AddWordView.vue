@@ -1,29 +1,31 @@
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex w-full min-w-0 flex-col gap-6">
-      <div class="flex items-center gap-2 p-1 rounded-xl bg-muted/70 w-fit">
+      <div class="flex items-center gap-2 p-1 rounded-xl glass-control border border-line w-fit">
         <button
           type="button"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-          :class="activeTab === 'single' ? 'bg-surface text-heading shadow-sm' : 'text-secondary hover:text-heading'"
+          class="px-4 py-2 rounded-lg border text-sm font-semibold transition-colors"
+          :class="activeTab === 'single' ? 'bg-accent-muted border-accent-line-strong text-accent-strong shadow-sm' : 'border-transparent text-secondary hover:text-heading'"
+          :aria-pressed="activeTab === 'single'"
           @click="activeTab = 'single'"
         >
           <i class="pi pi-pencil mr-1.5 text-xs"></i>Single Word
         </button>
         <button
           type="button"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5"
-          :class="activeTab === 'extract' ? 'bg-surface text-accent shadow-sm' : 'text-secondary hover:text-heading'"
+          class="px-4 py-2 rounded-lg border text-sm font-semibold transition-colors flex items-center gap-1.5"
+          :class="activeTab === 'extract' ? 'bg-accent-muted border-accent-line-strong text-accent-strong shadow-sm' : 'border-transparent text-secondary hover:text-heading'"
+          :aria-pressed="activeTab === 'extract'"
           @click="activeTab = 'extract'"
         >
-          <i class="pi pi-sparkles text-xs text-accent"></i>
+          <i class="pi pi-sparkles text-xs"></i>
           <span>Learn From Anything</span>
           <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-accent-muted text-accent-strong">AI</span>
         </button>
       </div>
 
       <div v-if="activeTab === 'single'" class="flex flex-col gap-6">
-        <section class="rounded-xl2 bg-surface border border-line p-5 shadow-soft flex flex-col sm:flex-row gap-3">
+        <section class="rounded-xl2 glass-panel border p-5 flex flex-col sm:flex-row gap-3">
           <InputText
             v-model="wordInput"
             placeholder="e.g. serendipity, call it a day..."
@@ -32,7 +34,7 @@
           />
           <button
             type="button"
-            class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             :disabled="!wordInput.trim() || generating"
             @click="handleGenerate"
           >
@@ -42,12 +44,12 @@
           </button>
         </section>
 
-        <section v-if="form.word" class="rounded-xl2 bg-surface border border-line p-6 shadow-soft flex flex-col gap-5">
+        <section v-if="form.word" class="rounded-xl2 glass-panel border p-6 flex flex-col gap-5">
           <WordForm :model-value="form" @update:model-value="(v) => Object.assign(form, v)" />
           <div class="flex justify-end gap-3 pt-4 border-t border-line-soft">
             <button
               type="button"
-              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all disabled:opacity-50"
+              class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all disabled:opacity-50"
               :disabled="saving"
               @click="handleSaveSingle"
             >
@@ -58,7 +60,7 @@
       </div>
 
       <div v-else class="flex flex-col gap-6">
-        <section class="rounded-xl2 bg-surface border border-line p-5 shadow-soft flex flex-col gap-4">
+        <section class="rounded-xl2 glass-panel border p-5 flex flex-col gap-4">
           <label class="font-medium text-sm text-copy">
             Paste an article snippet, email, tweet, or book passage:
           </label>
@@ -72,7 +74,7 @@
             <span class="text-xs text-faint">{{ rawText.length }} characters</span>
             <button
               type="button"
-              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
+              class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center gap-2 disabled:opacity-50"
               :disabled="rawText.trim().length < 15 || extracting"
               @click="handleExtract"
             >
@@ -90,7 +92,7 @@
             </h2>
             <button
               type="button"
-              class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-xs font-semibold px-5 py-2 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-xs font-semibold px-5 py-2 transition-all flex items-center gap-1.5 disabled:opacity-50"
               :disabled="selectedCount() === 0 || savingBatch"
               @click="handleSaveBatch"
             >
@@ -104,7 +106,7 @@
             <div
               v-for="item in extractedItems"
               :key="item.word"
-              class="rounded-xl bg-surface border p-4 shadow-sm transition-all flex items-start gap-3.5"
+              class="rounded-xl glass-panel border p-4 transition-all flex items-start gap-3.5"
               :class="selectedItems[item.word] ? 'border-accent-line-strong ring-1 ring-accent-line-strong' : 'border-line opacity-80'"
             >
               <input

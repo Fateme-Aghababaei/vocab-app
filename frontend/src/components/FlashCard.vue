@@ -6,7 +6,7 @@
         :class="{ 'is-flipped': flipped }"
       >
         <div
-          class="flip-card-face absolute inset-0 rounded-xl2 bg-surface border border-line shadow-soft flex flex-col items-center justify-center text-center px-8 py-10 cursor-pointer"
+          class="flip-card-face absolute inset-0 rounded-xl2 glass-panel border flex flex-col items-center justify-center text-center px-8 py-10 cursor-pointer"
           @click="!flipped && emit('flip')"
         >
           <div class="absolute top-5 left-5 flex gap-2">
@@ -26,7 +26,7 @@
           </p>
           <button
             type="button"
-            class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
+            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
             @click.stop="emit('flip')"
           >
             Show answer
@@ -34,7 +34,7 @@
         </div>
 
         <div
-          class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 bg-surface border border-line shadow-soft flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
+          class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 glass-panel border flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
         >
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex items-center gap-2.5">
@@ -144,9 +144,9 @@ const emit = defineEmits<{
 const intervals = computed(() => previewIntervals(props.word));
 
 const ratings: { quality: ReviewQuality; label: string; classes: string }[] = [
-  { quality: 0, label: "Again", classes: "bg-subtle text-copy hover:bg-muted" },
-  { quality: 1, label: "Hard", classes: "bg-warning-muted text-warning-ink hover:bg-warning-line" },
-  { quality: 2, label: "Good", classes: "bg-accent-muted text-accent-strong hover:bg-accent-line" },
-  { quality: 3, label: "Easy", classes: "bg-primary text-on-primary hover:bg-primary-hover" },
+  { quality: 0, label: "Again", classes: "glass-control text-copy hover:bg-muted" },
+  { quality: 1, label: "Hard", classes: "glass-control glass-warning text-warning-ink hover:bg-warning-line" },
+  { quality: 2, label: "Good", classes: "glass-control glass-accent text-accent-strong hover:bg-accent-line" },
+  { quality: 3, label: "Easy", classes: "glass-control glass-primary text-on-primary hover:bg-primary-hover" },
 ];
 </script>

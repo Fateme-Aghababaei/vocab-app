@@ -25,7 +25,7 @@
       <div
         v-for="rec in (store.recommendations as RecommendedWord[])"
         :key="rec.id"
-        class="min-w-0 rounded-xl2 bg-surface border border-line p-4 shadow-soft flex flex-col justify-between hover:border-accent-line hover:bg-accent-soft/40 hover:shadow-md hover:shadow-accent-muted/50 transition-all duration-200 motion-reduce:transition-none group"
+        class="min-w-0 rounded-xl2 glass-panel border p-4 flex flex-col justify-between hover:border-accent-line hover:bg-accent-soft/40 transition-all duration-200 motion-reduce:transition-none group"
       >
         <div>
           <div class="flex flex-col items-start gap-2 mb-2">
@@ -51,7 +51,7 @@
 
         <button
           type="button"
-          class="w-full rounded-full border border-line bg-canvas hover:bg-accent-soft hover:border-accent-line-strong text-copy hover:text-accent text-xs font-semibold py-2 transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+          class="w-full rounded-full border border-line glass-control hover:bg-accent-soft hover:border-accent-line-strong text-copy hover:text-accent text-xs font-semibold py-2 transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
           :disabled="addingId === rec.id"
           @click="handleAdd(rec)"
         >

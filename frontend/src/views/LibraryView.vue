@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <section class="rounded-xl2 bg-surface border border-line px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+    <section class="rounded-xl2 glass-panel border px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
       <IconField class="w-full sm:max-w-xs">
         <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
         <InputText
@@ -31,8 +31,8 @@
         class="rounded-full px-4 py-2 text-sm font-medium border transition-colors whitespace-nowrap"
         :class="
           dueOnly
-            ? 'bg-primary border-primary text-on-primary'
-            : 'bg-surface border-line text-secondary hover:border-accent-line-strong'
+            ? 'glass-control glass-primary border-primary text-on-primary'
+            : 'glass-control border-line text-secondary hover:border-accent-line-strong'
         "
         @click="dueOnly = !dueOnly"
       >
@@ -48,7 +48,7 @@
       <div
         v-for="w in store.words"
         :key="w.id"
-        class="rounded-xl2 bg-surface border border-line px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
+        class="rounded-xl2 glass-panel border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
         @click="openEdit(w)"
       >
         <div class="flex items-center gap-2 sm:w-48 shrink-0">
@@ -80,7 +80,7 @@
       </div>
     </section>
 
-    <div v-else class="rounded-xl2 bg-surface border border-line px-8 py-16 text-center flex flex-col items-center gap-3">
+    <div v-else class="rounded-xl2 glass-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
       <p class="font-display text-xl font-semibold text-heading">
         No words match yet
       </p>
@@ -104,14 +104,14 @@
       <template #footer>
         <button
           type="button"
-          class="rounded-full bg-surface border border-line text-secondary hover:bg-subtle text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
+          class="rounded-full glass-control border border-line text-secondary hover:bg-subtle text-sm font-semibold px-5 py-2.5 transition-colors mr-2"
           @click="editing = null"
         >
           Cancel
         </button>
         <button
           type="button"
-          class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
+          class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors disabled:opacity-60"
           :disabled="savingEdit"
           @click="saveEdit"
         >

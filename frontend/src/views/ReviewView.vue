@@ -29,7 +29,7 @@
         @rate="handleRate"
       />
 
-      <div v-else class="rounded-xl2 bg-surface border border-line px-8 py-16 text-center flex flex-col items-center gap-3">
+      <div v-else class="rounded-xl2 glass-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
         <div class="w-14 h-14 rounded-full bg-warning-muted flex items-center justify-center text-warning-icon mb-1">
           <i class="pi pi-check text-2xl"></i>
         </div>
@@ -46,13 +46,13 @@
         <div class="flex gap-3 mt-2">
           <router-link
             to="/add"
-            class="rounded-full bg-primary hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
+            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
           >
             Add a word
           </router-link>
           <router-link
             to="/library"
-            class="rounded-full bg-subtle hover:bg-muted text-copy text-sm font-semibold px-5 py-2.5 transition-colors"
+            class="rounded-full glass-control hover:bg-muted text-copy text-sm font-semibold px-5 py-2.5 transition-colors"
           >
             Browse library
           </router-link>

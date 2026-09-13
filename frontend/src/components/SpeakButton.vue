@@ -6,7 +6,7 @@
     class="relative inline-flex items-center justify-center rounded-full transition-all duration-200 text-quiet hover:text-accent hover:bg-accent-soft active:scale-95 shadow-sm"
     :class="[
       size === 'sm' ? 'w-7 h-7' : size === 'lg' ? 'w-11 h-11' : 'w-9 h-9',
-      isSpeaking ? 'text-accent bg-accent-muted' : 'bg-subtle',
+      isSpeaking ? 'text-accent bg-accent-muted' : 'glass-control',
     ]"
     @click="handleClick"
   >

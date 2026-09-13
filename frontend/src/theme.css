@@ -1,6 +1,12 @@
 /* Shared semantic colors used by both Tailwind and PrimeVue. */
 :root {
   color-scheme: light;
+  --glass-opacity: 0.68;
+  --glass-edge: 255 255 255;
+  --glass-edge-opacity: 0.65;
+  --glass-shadow: 33 30 40;
+  --glass-shadow-opacity: 0.06;
+  --glass-glow-opacity: 0.10;
   --logo-filter: none;
   --logo-blend: multiply;
   --color-canvas: 250 248 245;
@@ -43,6 +49,12 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --glass-opacity: 0.72;
+  --glass-edge: 200 200 220;
+  --glass-edge-opacity: 0.10;
+  --glass-shadow: 0 0 0;
+  --glass-shadow-opacity: 0.16;
+  --glass-glow-opacity: 0.12;
   --logo-filter: url(#logo-knockout);
   --logo-blend: normal;
   --color-canvas: 18 18 21;

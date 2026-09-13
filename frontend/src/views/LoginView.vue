@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 bg-canvas flex items-center justify-center px-4 py-10">
+  <div class="flex-1 flex items-center justify-center px-4 py-10">
     <div class="w-full max-w-sm">
       <div class="flex flex-col items-center mb-8">
         <img src="/memento.png" alt="Memento" class="app-logo w-10 h-10 mb-3 shrink-0 object-contain" />
@@ -11,7 +11,7 @@
         </p>
       </div>
 
-      <form class="rounded-xl2 bg-surface border border-line shadow-soft px-6 py-7 flex flex-col gap-4" @submit.prevent="handleSubmit">
+      <form class="rounded-xl2 glass-panel border px-6 py-7 flex flex-col gap-4" @submit.prevent="handleSubmit">
         <div
           v-if="error"
           class="rounded-lg bg-accent-soft border border-accent-line text-accent-strong text-sm px-3 py-2"
@@ -47,7 +47,7 @@
 
         <button
           type="submit"
-          class="mt-2 rounded-full bg-primary hover:bg-primary-hover disabled:bg-chart-neutral text-on-primary font-semibold py-2.5 transition-colors flex items-center justify-center gap-2"
+          class="mt-2 rounded-full glass-primary glass-control hover:bg-primary-hover disabled:bg-chart-neutral text-on-primary font-semibold py-2.5 transition-colors flex items-center justify-center gap-2"
           :disabled="loading || !email || !password"
         >
           <i v-if="loading" class="pi pi-spin pi-spinner"></i>
