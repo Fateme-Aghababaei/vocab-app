@@ -286,6 +286,9 @@ class WordViewSet(viewsets.ModelViewSet):
             interval_after=result["interval_after"],
         )
 
+        if hasattr(request.user, "profile"):
+            request.user.profile.update_streak_and_xp(earned_xp=5)
+
         return Response(self.get_serializer(word).data)
 
     @action(detail=False, methods=["get"], url_path="categories")

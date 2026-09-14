@@ -1,18 +1,92 @@
+# accounts/serializers.py
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from rest_framework import serializers
+from .models import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    streak_count = serializers.IntegerField(source="profile.streak_count", read_only=True)
+    xp = serializers.IntegerField(source="profile.xp", read_only=True)
+    level = serializers.IntegerField(source="profile.level", read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "email", "name"]
+        fields = ["id", "email", "name", "streak_count", "xp", "level"]
 
     def get_name(self, obj):
         return obj.first_name or obj.email.split("@")[0]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", read_only=True)
+    name = serializers.CharField(source="user.first_name", required=False, allow_blank=True)
+    level = serializers.ReadOnlyField()
+    level_title = serializers.ReadOnlyField()
+    garden_stats = serializers.SerializerMethodField()
+    today_progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "id",
+            "email",
+            "name",
+            "streak_count",
+            "max_streak",
+            "streak_freeze_count",
+            "xp",
+            "level",
+            "level_title",
+            "daily_goal",
+            "preferred_study_time",
+            "notifications_enabled",
+            "garden_stats",
+            "today_progress",
+        ]
+        read_only_fields = ["streak_count", "max_streak", "streak_freeze_count", "xp"]
+
+    def get_garden_stats(self, obj):
+        from backend.words.models import Word
+
+        words = Word.objects.filter(user=obj.user)
+        sprouts = words.filter(repetitions__lte=1).count()
+        growing = words.filter(repetitions__in=[2, 3]).count()
+        mature = words.filter(repetitions__gte=4).count()
+
+        return {
+            "sprouts": sprouts,
+            "growing": growing,
+            "mature": mature,
+            "total_words": words.count(),
+        }
+
+    def get_today_progress(self, obj):
+        from backend.words.models import ReviewLog
+
+        today = timezone.localdate()
+        reviewed_today = ReviewLog.objects.filter(
+            word__user=obj.user, reviewed_at__date=today
+        ).count()
+        goal = obj.daily_goal or 10
+
+        return {
+            "reviewed_today": reviewed_today,
+            "goal": goal,
+            "is_completed": reviewed_today >= goal,
+            "percentage": min(100, int((reviewed_today / goal) * 100)) if goal else 0,
+        }
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        if "first_name" in user_data:
+            instance.user.first_name = user_data["first_name"].strip()
+            instance.user.save(update_fields=["first_name"])
+
+        return super().update(instance, validated_data)
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -31,7 +105,7 @@ class RegisterSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        email = validated_data["email"]
+        email = validated_data["email"].strip().lower()
         user = User.objects.create_user(
             username=email,
             email=email,
