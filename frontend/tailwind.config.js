@@ -44,11 +44,11 @@ export default {
         "selection": "rgb(var(--color-selection) / <alpha-value>)",
       },
       fontFamily: {
-        display: ["Fraunces", "ui-serif", "Georgia", "serif"],
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Segoe UI", "sans-serif"],
+        sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Segoe UI", "sans-serif"],
       },
       borderRadius: {
-        xl2: "1.25rem",
+        xl2: "1.75rem",
       },
       boxShadow: {
         soft: "0 1px 2px rgba(33, 30, 27, 0.04), 0 8px 24px -12px rgba(33, 30, 27, 0.10)",

@@ -1,14 +1,15 @@
 <template>
   <div class="flex flex-col gap-6">
     <section
-      class="rounded-xl2 glass-panel glass-primary border text-on-primary px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
+      class="review-summary rounded-xl2 content-panel glass-primary border text-on-primary px-6 sm:px-8 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
     >
       <div>
         <p class="text-on-primary-muted text-sm font-medium mb-1">
-          Due for review
+          YOUR DAILY PRACTICE
         </p>
-        <p class="font-display text-5xl font-semibold">
-          {{ store.dueCount }}
+        <p class="review-count">
+          <span class="review-count-value">{{ store.dueCount }}</span>
+          <span class="review-count-label">{{ store.dueCount === 1 ? "word to revisit" : "words to revisit" }}</span>
         </p>
         <p class="text-on-primary-muted text-sm mt-2 max-w-xs">
           {{
@@ -28,8 +29,8 @@
       </button>
     </section>
 
-    <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <div class="rounded-xl2 glass-panel border px-5 py-4">
+    <section class="stats-grid grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="rounded-xl2 content-panel border px-5 py-4">
         <p class="text-xs font-medium text-faint mb-1">
           Total words
         </p>
@@ -37,7 +38,7 @@
           {{ store.stats?.total_words ?? "&ndash;" }}
         </p>
       </div>
-      <div class="rounded-xl2 glass-panel border px-5 py-4">
+      <div class="rounded-xl2 content-panel border px-5 py-4">
         <p class="text-xs font-medium text-faint mb-1">
           New words
         </p>
@@ -45,7 +46,7 @@
           {{ store.stats?.new_words ?? "&ndash;" }}
         </p>
       </div>
-      <div class="rounded-xl2 glass-panel glass-warning border px-5 py-4">
+      <div class="rounded-xl2 content-panel glass-warning border px-5 py-4">
         <p class="text-xs font-medium text-warning-copy mb-1">
           Reviewed today
         </p>
@@ -53,7 +54,7 @@
           {{ store.stats?.reviewed_today ?? "&ndash;" }}
         </p>
       </div>
-      <div class="rounded-xl2 glass-panel border px-5 py-4">
+      <div class="rounded-xl2 content-panel border px-5 py-4">
         <p class="text-xs font-medium text-faint mb-1">
           Learned
         </p>
@@ -66,7 +67,7 @@
     <RecommendedSection />
 
     <div class="grid lg:grid-cols-5 gap-6">
-      <section class="lg:col-span-2 rounded-xl2 glass-panel border px-6 py-5">
+      <section class="lg:col-span-2 rounded-xl2 content-panel border px-6 py-5">
         <h2 class="text-sm font-semibold text-copy mb-4">
           Words by difficulty
         </h2>
@@ -83,7 +84,7 @@
         </div>
       </section>
 
-      <section class="lg:col-span-3 rounded-xl2 glass-panel border px-6 py-5">
+      <section class="lg:col-span-3 rounded-xl2 content-panel border px-6 py-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-semibold text-copy">
             Recently added

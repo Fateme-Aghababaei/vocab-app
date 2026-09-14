@@ -1,6 +1,6 @@
-const CACHE = "memento-offline-v2";
+const CACHE = "memento-offline-v3";
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.add("/offline.html")));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["/offline.html", "/memento.svg"])));
 });
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(
@@ -10,6 +10,10 @@ self.addEventListener("activate", (event) => {
 });
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && url.pathname === "/memento.svg" && event.request.method === "GET") {
+    event.respondWith(fetch(event.request).catch(() => caches.match("/memento.svg").then((response) => response || Response.error())));
+    return;
+  }
   if (event.request.method !== "GET" || event.request.mode !== "navigate" ||
       url.origin !== self.location.origin || url.pathname === "/api" ||
       url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin/")) return;

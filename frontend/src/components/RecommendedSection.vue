@@ -25,7 +25,7 @@
       <div
         v-for="rec in (store.recommendations as RecommendedWord[])"
         :key="rec.id"
-        class="min-w-0 rounded-xl2 glass-panel border p-4 flex flex-col justify-between hover:border-accent-line hover:bg-accent-soft/40 transition-all duration-200 motion-reduce:transition-none group"
+        class="min-w-0 rounded-xl2 content-panel border p-4 flex flex-col justify-between hover:border-accent-line hover:bg-accent-soft/40 transition-all duration-200 motion-reduce:transition-none group"
       >
         <div>
           <div class="flex flex-col items-start gap-2 mb-2">

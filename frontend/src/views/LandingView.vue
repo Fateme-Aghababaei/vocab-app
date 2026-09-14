@@ -1,8 +1,8 @@
 <template>
-  <div class="mx-auto w-full max-w-6xl px-5 sm:px-8">
-    <header class="flex items-center justify-between gap-4 py-6">
+  <div class="landing-page mx-auto w-full max-w-6xl px-5 sm:px-8">
+    <header class="landing-nav glass-panel flex items-center justify-between gap-4 py-6">
       <router-link to="/" class="flex items-center gap-2 font-display text-xl font-semibold text-heading" aria-label="Memento home">
-        <img src="/memento.png" alt="" class="app-logo h-9 w-9 object-contain" />
+        <img src="/memento.svg" alt="" class="app-logo h-9 w-9 object-contain" />
         Memento
       </router-link>
       <nav aria-label="Main navigation" class="flex items-center gap-4 sm:gap-6">
@@ -15,13 +15,13 @@
     </header>
 
     <main>
-      <section class="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-2 lg:gap-16">
+      <section class="landing-hero grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-2 lg:gap-16">
         <div>
           <p class="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Your vocabulary, growing daily
+            A little practice. A lasting impression.
           </p>
           <h1 class="text-5xl font-medium leading-[1.08] tracking-tight sm:text-6xl">
-            Learn words<br />that <em class="text-accent">stick.</em>
+            A world of words.<br /><span class="text-accent">Yours to keep.</span>
           </h1>
           <p class="mt-6 max-w-md text-lg leading-relaxed text-secondary">
             Turn the English words you discover into words you remember. Build your own vocabulary library and keep it fresh with spaced repetition.
@@ -47,8 +47,8 @@
         <h2 class="mt-3 text-3xl sm:text-4xl">
           Make new words part of your world.
         </h2>
-        <div class="mt-10 grid gap-8 md:grid-cols-3">
-          <article v-for="(feature, index) in features" :key="feature.title">
+        <div class="feature-grid mt-10 grid gap-8 md:grid-cols-3">
+          <article v-for="(feature, index) in features" :key="feature.title" class="content-panel rounded-3xl p-7">
             <span class="font-display text-3xl text-accent">0{{ index + 1 }}</span>
             <h3 class="mt-4 text-xl font-semibold">
               {{ feature.title }}
@@ -60,7 +60,7 @@
         </div>
       </section>
 
-      <section class="glass-panel mb-10 rounded-3xl border px-6 py-10 text-center sm:p-12">
+      <section class="content-panel mb-10 rounded-3xl border px-6 py-10 text-center sm:p-12">
         <h2 class="text-3xl">
           Your next word is waiting.
         </h2>
@@ -79,11 +79,11 @@
     <footer class="flex flex-row flex-wrap items-center justify-between gap-x-8 gap-y-6 border-t border-line py-8 sm:py-10">
       <div>
         <router-link to="/" class="inline-flex items-center gap-2 font-display text-lg font-semibold text-heading" aria-label="Memento home">
-          <img src="/memento.png" alt="" class="app-logo h-7 w-7 object-contain" />
+          <img src="/memento.svg" alt="" class="app-logo h-7 w-7 object-contain" />
           Memento
         </router-link>
         <p class="mt-2 text-xs text-quiet">
-          made with <span role="img" aria-label="love">❤️</span> by Memento team
+          made with <span role="img" aria-label="love">💙</span> by Memento team
         </p>
       </div>
       <nav aria-label="Footer navigation" class="flex flex-row flex-wrap gap-x-5 gap-y-3 text-sm text-secondary">

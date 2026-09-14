@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex w-full min-w-0 flex-col gap-6">
-      <div class="flex items-center gap-2 p-1 rounded-xl glass-control border border-line w-fit">
+      <div class="capture-tabs flex items-center gap-2 p-1 rounded-xl glass-control border border-line w-fit">
         <button
           type="button"
           class="px-4 py-2 rounded-lg border text-sm font-semibold transition-colors"
@@ -25,7 +25,7 @@
       </div>
 
       <div v-if="activeTab === 'single'" class="flex flex-col gap-6">
-        <section class="rounded-xl2 glass-panel border p-5 flex flex-col sm:flex-row gap-3">
+        <section class="rounded-xl2 content-panel border p-5 flex flex-col sm:flex-row gap-3">
           <InputText
             v-model="wordInput"
             placeholder="e.g. serendipity, call it a day..."
@@ -44,7 +44,7 @@
           </button>
         </section>
 
-        <section v-if="form.word" class="rounded-xl2 glass-panel border p-6 flex flex-col gap-5">
+        <section v-if="form.word" class="rounded-xl2 content-panel border p-6 flex flex-col gap-5">
           <WordForm :model-value="form" @update:model-value="(v) => Object.assign(form, v)" />
           <div class="flex justify-end gap-3 pt-4 border-t border-line-soft">
             <button
@@ -60,7 +60,7 @@
       </div>
 
       <div v-else class="flex flex-col gap-6">
-        <section class="rounded-xl2 glass-panel border p-5 flex flex-col gap-4">
+        <section class="rounded-xl2 content-panel border p-5 flex flex-col gap-4">
           <label class="font-medium text-sm text-copy">
             Paste an article snippet, email, tweet, or book passage:
           </label>
@@ -106,7 +106,7 @@
             <div
               v-for="item in extractedItems"
               :key="item.word"
-              class="rounded-xl glass-panel border p-4 transition-all flex items-start gap-3.5"
+              class="rounded-xl content-panel border p-4 transition-all flex items-start gap-3.5"
               :class="selectedItems[item.word] ? 'border-accent-line-strong ring-1 ring-accent-line-strong' : 'border-line opacity-80'"
             >
               <input
