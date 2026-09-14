@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#EF476F">
+  <meta name="theme-color" content="#0066CC">
   <title>You're offline — Memento</title>
   <style>
-    body { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #fafaf9; color: #292524; font: 16px/1.6 system-ui, sans-serif; }
-    main { max-width: 24rem; padding: 2rem; text-align: center; }
-    .logo { color: #ef476f; font: bold 64px Georgia, serif; }
-    a { display: inline-block; background: #ef476f; color: white; padding: .7rem 1.5rem; border-radius: .8rem; text-decoration: none; }
+    body { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #f5f5f7; color: #1d1d1f; font: 16px/1.6 system-ui, sans-serif; }
+    main { max-width: 24rem; margin: 1rem; padding: 2rem; background: #fff; border-radius: 28px; box-shadow: 0 12px 40px #00000008; text-align: center; }
+    .logo { display: block; width: 80px; height: 80px; margin: 0 auto; }
+    a { display: inline-block; background: #0066cc; color: white; padding: .7rem 1.5rem; border-radius: 999px; text-decoration: none; }
+    a:focus-visible { outline: 3px solid #0066cc; outline-offset: 4px; }
+    @media (prefers-color-scheme: dark) { body { background: #121215; color: #f5f5f7; } main { background: #19191d; } }
   </style>
 </head>
 <body><main>
-  <div class="logo" aria-hidden="true">V</div>
+  <img class="logo" src="/memento.svg" alt="Memento">
   <h1>You're offline</h1>
   <p>Connect to the internet to open your words, review flashcards, or generate a definition.</p>
   <a href="/">Try again</a>

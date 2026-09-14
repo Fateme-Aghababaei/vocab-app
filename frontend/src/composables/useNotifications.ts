@@ -61,7 +61,7 @@ export function useNotifications() {
 
     await sendNotification(title, {
       body,
-      data: { url: "/" },
+      data: { url: "/app" },
     });
 
     localStorage.setItem("vocab_last_notification_date", todayStr);

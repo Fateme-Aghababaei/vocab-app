@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <section class="rounded-xl2 glass-panel border px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+    <section class="library-toolbar glass-panel rounded-xl2 border px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
       <IconField class="w-full sm:max-w-xs">
         <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
         <InputText
@@ -48,7 +48,7 @@
       <div
         v-for="w in store.words"
         :key="w.id"
-        class="rounded-xl2 glass-panel border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
+        class="library-row rounded-xl2 content-panel border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
         @click="openEdit(w)"
       >
         <div class="flex items-center gap-2 sm:w-48 shrink-0">
@@ -80,7 +80,7 @@
       </div>
     </section>
 
-    <div v-else class="rounded-xl2 glass-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
+    <div v-else class="rounded-xl2 content-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
       <p class="font-display text-xl font-semibold text-heading">
         No words match yet
       </p>

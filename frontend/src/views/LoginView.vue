@@ -1,8 +1,11 @@
 <template>
-  <div class="flex-1 flex items-center justify-center px-4 py-10">
-    <div class="w-full max-w-sm">
+  <div class="auth-page flex-1 flex items-center justify-center px-4 py-10">
+    <div class="auth-card w-full max-w-sm">
+      <router-link to="/" class="auth-home text-sm text-secondary">
+        <i class="pi pi-chevron-left" aria-hidden="true"></i> Memento
+      </router-link>
       <div class="flex flex-col items-center mb-8">
-        <img src="/memento.png" alt="Memento" class="app-logo w-10 h-10 mb-3 shrink-0 object-contain" />
+        <img src="/memento.svg" alt="Memento" class="app-logo w-10 h-10 mb-3 shrink-0 object-contain" />
         <h1 class="font-display text-2xl font-semibold text-heading">
           Welcome back
         </h1>
@@ -11,7 +14,7 @@
         </p>
       </div>
 
-      <form class="rounded-xl2 glass-panel border px-6 py-7 flex flex-col gap-4" @submit.prevent="handleSubmit">
+      <form class="rounded-xl2 content-panel border px-6 py-7 flex flex-col gap-4" @submit.prevent="handleSubmit">
         <div
           v-if="error"
           class="rounded-lg bg-accent-soft border border-accent-line text-accent-strong text-sm px-3 py-2"
@@ -91,7 +94,7 @@ async function handleSubmit() {
   error.value = "";
   try {
     await auth.login(email.value, password.value);
-    const next = typeof route.query.next === "string" ? route.query.next : "/";
+    const next = typeof route.query.next === "string" ? route.query.next : "/app";
     router.push(next);
   } catch (e) {
     error.value = apiErrorMessage(e);

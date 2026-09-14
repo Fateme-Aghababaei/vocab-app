@@ -6,7 +6,7 @@
         :class="{ 'is-flipped': flipped }"
       >
         <div
-          class="flip-card-face absolute inset-0 rounded-xl2 glass-panel border flex flex-col items-center justify-center text-center px-8 py-10 cursor-pointer"
+          class="flip-card-face absolute inset-0 rounded-xl2 content-panel border flex flex-col items-center justify-center text-center px-8 py-10 cursor-pointer"
           @click="!flipped && emit('flip')"
         >
           <div class="absolute top-5 left-5 flex gap-2">
@@ -34,7 +34,7 @@
         </div>
 
         <div
-          class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 glass-panel border flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
+          class="flip-card-face flip-card-back absolute inset-0 rounded-xl2 content-panel border flex flex-col px-6 sm:px-8 py-7 overflow-y-auto"
         >
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex items-center gap-2.5">

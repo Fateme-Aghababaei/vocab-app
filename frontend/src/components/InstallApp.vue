@@ -3,7 +3,7 @@
     v-if="!isInstalled"
     type="button"
     :disabled="installing"
-    class="header-action w-auto gap-2 px-2 text-xs"
+    class="glass-control inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50"
     aria-label="Install app"
     title="Install app"
     @click="install"
