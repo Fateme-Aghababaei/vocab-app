@@ -9,8 +9,6 @@ class Difficulty(models.TextChoices):
     ADVANCED = "advanced", "Advanced"
 
 
-# Suggested categories shown in the UI. Stored as free-form strings so users
-# (or the LLM) aren't hard-blocked from introducing a new one.
 SUGGESTED_CATEGORIES = [
     "Everyday Conversation",
     "Work",
@@ -33,7 +31,6 @@ class Word(models.Model):
     )
     word = models.CharField(max_length=100)
 
-    # --- LLM-generated (user-editable) learning content ---
     pronunciation = models.CharField(max_length=200, blank=True, default="")
     definition = models.TextField(blank=True)
     examples = models.JSONField(default=list, blank=True)  # list[str]
@@ -44,7 +41,6 @@ class Word(models.Model):
     )
     categories = models.JSONField(default=list, blank=True)  # list[str]
 
-    # --- Spaced repetition state (SM-2 derived) ---
     repetitions = models.PositiveIntegerField(default=0)
     ease_factor = models.FloatField(default=2.5)
     interval_days = models.FloatField(default=0)
@@ -71,10 +67,13 @@ class Word(models.Model):
     def is_new(self):
         return self.repetitions == 0
 
+    def save(self, *args, **kwargs):
+        if self.word:
+            self.word = self.word.strip().lower()
+        super().save(*args, **kwargs)
+
 
 class ReviewLog(models.Model):
-    """One row per flashcard review, kept for stats/history."""
-
     class Quality(models.IntegerChoices):
         AGAIN = 0, "Again"
         HARD = 1, "Hard"
@@ -89,16 +88,20 @@ class ReviewLog(models.Model):
 
     class Meta:
         ordering = ["-reviewed_at"]
+
+
 class GlobalWord(models.Model):
     word = models.CharField(max_length=100, unique=True, db_index=True)
+    pronunciation = models.CharField(max_length=200, blank=True, default="")  # اضافه شد
     definition = models.TextField(blank=True)
-    examples = models.JSONField(default=list, blank=True)
+    examples = models.JSONField(default=list, blank=True)  # list[str]
     usage_notes = models.TextField(blank=True)
-    collocations = models.JSONField(default=list, blank=True)
+    collocations = models.JSONField(default=list, blank=True)  # list[str]
     difficulty = models.CharField(
         max_length=20, choices=Difficulty.choices, default=Difficulty.INTERMEDIATE
     )
-    categories = models.JSONField(default=list, blank=True)
+    categories = models.JSONField(default=list, blank=True)  # list[str]
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -109,3 +112,8 @@ class GlobalWord(models.Model):
 
     def __str__(self):
         return self.word
+
+    def save(self, *args, **kwargs):
+        if self.word:
+            self.word = self.word.strip().lower()
+        super().save(*args, **kwargs)

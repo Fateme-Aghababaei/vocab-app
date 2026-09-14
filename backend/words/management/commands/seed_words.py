@@ -1,81 +1,104 @@
-import os
+# words/management/commands/seed_words.py
+import re
 import time
 from django.core.management.base import BaseCommand
 from words.models import GlobalWord
-from words.gemini_service import generate_word_info, GeminiError
+from words.dictionary_service import fetch_from_open_apis
 
 
 class Command(BaseCommand):
-    help = "Seed the GlobalWord dictionary from a plain text file (one word per line)"
+    help = "Fast, resilient seeding for GlobalWord dictionary from text files"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "file_path",
             type=str,
-            help="Path to the text file containing words (one per line)",
+            help="Path to the text file containing words",
+        )
+        parser.add_argument(
+            "--use-ai",
+            action="store_true",
+            help="Fallback to Gemini AI if open dictionary lookup fails (requires VPN/Proxy)",
         )
         parser.add_argument(
             "--delay",
             type=float,
-            default=1.5,
-            help="Delay in seconds between AI requests to respect rate limits (default: 1.5s)",
+            default=0.3,
+            help="Delay in seconds between requests (default: 0.3s)",
         )
+
+    def _extract_category(self, line: str) -> list[str]:
+        cleaned = re.sub(r"[#\-\(\)\d\+]", "", line).strip()
+        cleaned = re.sub(r"\bwords\b", "", cleaned, flags=re.IGNORECASE).strip()
+        parts = [p.strip() for p in re.split(r"[,/&]", cleaned) if p.strip()]
+        return parts if parts else ["Everyday Conversation"]
 
     def handle(self, *args, **options):
         file_path = options["file_path"]
+        use_ai = options["use_ai"]
         delay = options["delay"]
 
-        if not os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        except FileNotFoundError:
             self.stderr.write(self.style.ERROR(f"File not found: {file_path}"))
             return
 
-        with open(file_path, "r", encoding="utf-8") as f:
-            raw_lines = f.readlines()
+        current_categories = ["Everyday Conversation"]
+        word_items = []
 
-        words = [line.strip() for line in raw_lines if line.strip() and not line.startswith("#")]
-        total = len(words)
+        for line in lines:
+            line_str = line.strip()
+            if not line_str:
+                continue
+            if line_str.startswith("#"):
+                current_categories = self._extract_category(line_str)
+                continue
+            word_items.append((line_str.lower(), list(current_categories)))
+
+        total = len(word_items)
         self.stdout.write(self.style.NOTICE(f"Found {total} words in '{file_path}'. Starting seeding..."))
 
         added_count = 0
         skipped_count = 0
         failed_count = 0
 
-        for index, word in enumerate(words, start=1):
-            normalized_word = word.lower()
-
-            # ۱. بررسی اینکه کلمه از قبل در دیتابیس هست یا نه
-            if GlobalWord.objects.filter(word__iexact=normalized_word).exists():
+        for index, (word, categories) in enumerate(word_items, start=1):
+            if GlobalWord.objects.filter(word__iexact=word).exists():
                 self.stdout.write(f"[{index}/{total}] Skipped '{word}' (already exists).")
                 skipped_count += 1
                 continue
 
-            self.stdout.write(f"[{index}/{total}] Generating info for '{word}' via AI...", ending=" ")
+            self.stdout.write(f"[{index}/{total}] Fetching data for '{word}'...", ending=" ")
+            data = fetch_from_open_apis(word)
+            if not data and use_ai:
+                try:
+                    from words.gemini_service import generate_word_info
+                    data = generate_word_info(word)
+                except Exception:
+                    data = None
 
-            # ۲. دریافت اطلاعات از جمنای
-            try:
-                info = generate_word_info(word)
+            if data and data.get("definition"):
+                final_categories = list(set(categories + data.get("categories", [])))
                 GlobalWord.objects.create(
-                    word=normalized_word,
-                    definition=info.get("definition", ""),
-                    examples=info.get("examples", []),
-                    usage_notes=info.get("usage_notes", ""),
-                    collocations=info.get("collocations", []),
-                    difficulty=info.get("difficulty", "intermediate"),
-                    categories=info.get("categories", []),
+                    word=data.get("word", word).lower(),
+                    definition=data.get("definition", ""),
+                    examples=data.get("examples", []),
+                    usage_notes=data.get("usage_notes", ""),
+                    collocations=data.get("collocations", []),
+                    difficulty=data.get("difficulty", "intermediate"),
+                    categories=final_categories,
                 )
-                self.stdout.write(self.style.SUCCESS("✓ Saved!"))
+                self.stdout.write(self.style.SUCCESS(f"✓ Saved ({data.get('difficulty', 'intermediate')})"))
                 added_count += 1
-            except GeminiError as exc:
-                self.stdout.write(self.style.ERROR(f"✗ Failed ({exc})"))
-                failed_count += 1
-            except Exception as exc:
-                self.stdout.write(self.style.ERROR(f"✗ Unexpected error ({exc})"))
+            else:
+                self.stdout.write(self.style.WARNING("✗ Not found / Skipped"))
                 failed_count += 1
 
-            # وقفه کوتاه برای احترام به سقف نرخ درخواست‌ها
             time.sleep(delay)
 
-        self.stdout.write("\n" + "=" * 40)
-        self.stdout.write(self.style.SUCCESS(f"Seeding completed!"))
-        self.stdout.write(f"Added: {added_count} | Skipped: {skipped_count} | Failed: {failed_count}")
-        self.stdout.write("=" * 40)
+        self.stdout.write("\n" + "=" * 45)
+        self.stdout.write(self.style.SUCCESS("Seeding Process Finished!"))
+        self.stdout.write(f"Added: {added_count} | Already in DB: {skipped_count} | Failed: {failed_count}")
+        self.stdout.write("=" * 45)
