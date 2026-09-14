@@ -4,7 +4,7 @@
   "short_name": "Memento",
   "description": "Build your vocabulary with flashcards and daily reviews.",
   "lang": "en",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "background_color": "#fafaf9",

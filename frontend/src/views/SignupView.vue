@@ -133,7 +133,7 @@ async function handleSubmit() {
   error.value = "";
   try {
     await auth.register(email.value, password.value, name.value);
-    router.push("/");
+    router.push("/app");
   } catch (e) {
     error.value = apiErrorMessage(e);
   } finally {

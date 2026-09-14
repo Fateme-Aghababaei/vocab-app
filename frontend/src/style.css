@@ -50,7 +50,7 @@
   }
 
   .header-action {
-    @apply glass-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-sm text-faint transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50;
+    @apply glass-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-sm text-faint transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50;
   }
 }
 
@@ -110,6 +110,12 @@ body {
 :root :is(.p-inputtext, .p-textarea, .p-select, .p-multiselect):not(:disabled):not(.p-disabled) {
   background: rgb(var(--color-surface) / var(--glass-opacity));
   box-shadow: inset 0 1px 0 rgb(var(--glass-edge) / var(--glass-edge-opacity));
+}
+
+/* Share the pill shape across native buttons and PrimeVue actions, including overlays. */
+:root button,
+:root .p-button {
+  border-radius: 9999px;
 }
 
 /* Keep PrimeVue button semantics while sharing the surface highlight. */

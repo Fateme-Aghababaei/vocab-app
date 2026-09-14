@@ -5,6 +5,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: "/",
+      name: "landing",
+      component: () => import("@/views/LandingView.vue"),
+      meta: { public: true },
+    },
+    {
       path: "/login",
       name: "login",
       component: () => import("@/views/LoginView.vue"),
@@ -17,7 +23,7 @@ const router = createRouter({
       meta: { public: true },
     },
     {
-      path: "/",
+      path: "/app",
       name: "dashboard",
       component: () => import("@/views/DashboardView.vue"),
       meta: { title: "Good to see you", description: "Here’s what your vocabulary practice looks like today." },
@@ -56,11 +62,19 @@ router.beforeEach(async (to) => {
     return { name: "login", query: to.fullPath !== "/" ? { next: to.fullPath } : undefined };
   }
 
-  if (isPublic && auth.isAuthenticated) {
+  if (isPublic && to.name !== "landing" && auth.isAuthenticated) {
     return { name: "dashboard" };
   }
 
   return true;
+});
+
+router.afterEach((to) => {
+  const landing = to.name === "landing";
+  document.title = landing
+    ? "Memento — English vocabulary flashcards & spaced repetition"
+    : `${to.meta.title || (to.name === "signup" ? "Create an account" : "Log in")} — Memento`;
+  document.querySelector('meta[name="robots"]')?.setAttribute("content", landing ? "index, follow" : "noindex, follow");
 });
 
 export default router;

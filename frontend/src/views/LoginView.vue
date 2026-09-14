@@ -91,7 +91,7 @@ async function handleSubmit() {
   error.value = "";
   try {
     await auth.login(email.value, password.value);
-    const next = typeof route.query.next === "string" ? route.query.next : "/";
+    const next = typeof route.query.next === "string" ? route.query.next : "/app";
     router.push(next);
   } catch (e) {
     error.value = apiErrorMessage(e);

@@ -19,7 +19,7 @@
 
     <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <router-view />
-      <AppFooter />
+      <AppFooter v-if="route.name !== 'landing'" />
     </div>
 
     <div v-else class="flex min-h-dvh">
@@ -162,7 +162,7 @@ const store = useWordsStore();
 const auth = useAuthStore();
 
 const navItems = [
-  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/" },
+  { name: "dashboard", label: "Dashboard", icon: "pi pi-home", to: "/app" },
   { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
   { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
   { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
