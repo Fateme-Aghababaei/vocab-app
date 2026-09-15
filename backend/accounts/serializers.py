@@ -14,10 +14,11 @@ class UserSerializer(serializers.ModelSerializer):
     streak_count = serializers.IntegerField(source="profile.streak_count", read_only=True)
     xp = serializers.IntegerField(source="profile.xp", read_only=True)
     level = serializers.IntegerField(source="profile.level", read_only=True)
+    avatar = serializers.CharField(source="profile.avatar", read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "email", "name", "streak_count", "xp", "level"]
+        fields = ["id", "email", "name", "streak_count", "xp", "level", "avatar"]
 
     def get_name(self, obj):
         return obj.first_name or obj.email.split("@")[0]
@@ -38,6 +39,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "name",
+            "avatar",
             "streak_count",
             "max_streak",
             "streak_freeze_count",

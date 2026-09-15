@@ -1,6 +1,6 @@
 <template>
   <div class="app-backdrop min-h-dvh text-body">
-    <Toast position="top-right" />
+    <Toast position="top-right" :breakpoints="{ '640px': { width: 'calc(100% - 2rem)', right: '1rem', left: '1rem' } }" />
     <ConfirmDialog />
 
     <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -56,7 +56,8 @@
             :class="{ 'bg-accent-soft border-accent-line': isActive('profile') }"
             aria-label="Your profile"
           >
-            <div class="min-w-0">
+            <UserAvatar :avatar="auth.user?.avatar" :name="auth.user?.name" class="h-9 w-9 text-sm" />
+            <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-body truncate">
                 {{ auth.user?.name }}
               </p>
@@ -126,6 +127,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import HeaderActions from "@/components/HeaderActions.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
 import AppFooter from "@/components/AppFooter.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";

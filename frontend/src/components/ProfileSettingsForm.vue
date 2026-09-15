@@ -1,5 +1,5 @@
 <template>
-  <form class="rounded-xl2 content-panel border p-5 sm:p-7" :aria-busy="saving" @submit.prevent="submit">
+  <form class="flex flex-col rounded-xl2 content-panel border p-5 sm:p-7" :aria-busy="saving" @submit.prevent="submit">
     <h2 class="text-lg font-semibold">
       Settings
     </h2>
@@ -7,7 +7,7 @@
       A little practice, at a time that works for you.
     </p>
 
-    <fieldset :disabled="saving" class="mt-6 grid min-w-0 gap-5 sm:grid-cols-2">
+    <fieldset :disabled="saving" class="my-6 grid min-w-0 gap-5 sm:grid-cols-2">
       <legend class="sr-only">
         Profile and study preferences
       </legend>
@@ -63,20 +63,7 @@
       </div>
     </fieldset>
 
-    <Message
-      v-if="error"
-      severity="error"
-      class="mt-5"
-      role="alert"
-    >
-      {{ error }} Your changes have been kept. Please try saving again.
-    </Message>
-    <div aria-live="polite" aria-atomic="true">
-      <Message v-if="saved && !hasChanges" severity="success" class="mt-5">
-        Your changes have been saved.
-      </Message>
-    </div>
-    <div class="mt-6 flex flex-col gap-3 border-t border-line-soft pt-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mt-auto flex flex-col gap-3 border-t border-line-soft pt-5 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-xs text-quiet">
         {{ hasChanges ? 'You have unsaved changes.' : 'Your preferences, your pace.' }}
       </p>
@@ -95,22 +82,19 @@
 import { computed, reactive, watch } from "vue";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
-import Message from "primevue/message";
 import Select from "primevue/select";
 import ToggleSwitch from "primevue/toggleswitch";
 import NotificationButton from "@/components/NotificationButton.vue";
-import type { ProfileSettings } from "@/types";
+import type { StudySettings } from "@/types";
 
 const props = defineProps<{
-  settings: ProfileSettings;
+  settings: StudySettings;
   saving: boolean;
-  error: string;
-  saved: boolean;
 }>();
-const emit = defineEmits<{ save: [settings: ProfileSettings] }>();
+const emit = defineEmits<{ save: [settings: StudySettings] }>();
 const dailyGoals = [5, 10, 15, 20].map((value) => ({ label: `${value} words`, value }));
 
-function editableSettings(settings: ProfileSettings) {
+function editableSettings(settings: StudySettings) {
   return {
     name: settings.name,
     daily_goal: settings.daily_goal,

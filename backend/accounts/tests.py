@@ -1,7 +1,8 @@
-from django.test import SimpleTestCase
+from django.contrib.auth.models import User
+from django.test import SimpleTestCase, TestCase
 
 from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .serializers import UserProfileSerializer, UserSerializer
 
 
 class PlanetLevelTests(SimpleTestCase):
@@ -53,3 +54,60 @@ class PlanetLevelTests(SimpleTestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data, {})
         self.assertTrue(serializer.fields["level_progress"].read_only)
+
+
+class AvatarSettingsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="avatar@example.com", email="avatar@example.com", first_name="Explorer",
+        )
+
+    def test_new_account_uses_initial_by_default(self):
+        self.assertEqual(self.user.profile.avatar, "")
+        self.assertEqual(UserSerializer(self.user).data["avatar"], "")
+
+    def test_each_avatar_persists_and_is_available_to_auth_responses(self):
+        expected_avatars = [
+            "Nilo",
+            "Mobi",
+            "Lumi",
+            "Rico",
+            "Selu",
+            "Orbi",
+            "Veya",
+            "Soli",
+        ]
+        for avatar in expected_avatars:
+            with self.subTest(avatar=avatar):
+                serializer = UserProfileSerializer(
+                    self.user.profile, data={"avatar": avatar}, partial=True,
+                )
+                self.assertTrue(serializer.is_valid(), serializer.errors)
+                serializer.save()
+                self.user.profile.refresh_from_db()
+                self.assertEqual(self.user.profile.avatar, avatar)
+                self.assertEqual(UserSerializer(self.user).data["avatar"], avatar)
+                self.assertEqual(self.user.first_name, "Explorer")
+
+    def test_avatar_can_be_cleared_without_changing_other_preferences(self):
+        profile = self.user.profile
+        profile.avatar = "Nilo"
+        profile.daily_goal = 20
+        profile.save()
+        serializer = UserProfileSerializer(profile, data={"avatar": ""}, partial=True)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+        profile.refresh_from_db()
+        self.assertEqual(profile.avatar, "")
+        self.assertEqual(profile.daily_goal, 20)
+
+    def test_invalid_avatar_is_rejected_without_changing_selection(self):
+        for avatar in ["unknown", "../other-image.png", "https://example.com/avatar.png", None]:
+            with self.subTest(avatar=avatar):
+                serializer = UserProfileSerializer(
+                    self.user.profile, data={"avatar": avatar}, partial=True,
+                )
+                self.assertFalse(serializer.is_valid())
+                self.assertIn("avatar", serializer.errors)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.avatar, "")

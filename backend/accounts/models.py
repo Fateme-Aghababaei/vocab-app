@@ -12,6 +12,16 @@ class UserProfile(models.Model):
         "Mercury", "Venus", "Earth", "Mars",
         "Jupiter", "Saturn", "Uranus", "Neptune",
     )
+    AVATAR_CHOICES = (
+        ("Nilo", "The Wise Alien — Nilo"),
+        ("Mobi", "The Friendly Robot — Mobi"),
+        ("Lumi", "The Stargazer Spirit — Lumi"),
+        ("Rico", "The Comet Trickster — Rico"),
+        ("Selu", "The Moon Guardian — Selu"),
+        ("Orbi", "The Planet Keeper — Orbi"),
+        ("Veya", "The Cosmic Wanderer — Veya"),
+        ("Soli", "The Star Forger — Soli"),
+    )
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
@@ -24,6 +34,7 @@ class UserProfile(models.Model):
     daily_goal = models.PositiveIntegerField(default=10)
     preferred_study_time = models.TimeField(null=True, blank=True)
     notifications_enabled = models.BooleanField(default=True)
+    avatar = models.CharField(max_length=32, choices=AVATAR_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

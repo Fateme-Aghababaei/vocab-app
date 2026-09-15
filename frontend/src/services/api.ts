@@ -79,10 +79,11 @@ export const api = {
     return data;
   },
 
-  async updateProfile(settings: ProfileSettings): Promise<UserProfile> {
-    const { name, daily_goal, preferred_study_time, notifications_enabled } = settings;
+  async updateProfile(settings: Partial<ProfileSettings>): Promise<UserProfile> {
+    const { name, avatar, daily_goal, preferred_study_time, notifications_enabled } = settings;
     const { data } = await client.patch<UserProfile>("/auth/profile/", {
       name,
+      avatar,
       daily_goal,
       preferred_study_time,
       notifications_enabled,

@@ -32,12 +32,19 @@
   <div v-else-if="profile" class="flex flex-col gap-6">
     <section class="rounded-xl2 content-panel border p-5 sm:p-7" aria-labelledby="profile-name-heading">
       <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <div
-          class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-accent-soft text-3xl font-semibold text-accent-strong ring-4 ring-accent-soft/50"
-          aria-hidden="true"
-        >
-          <span v-if="initial">{{ initial }}</span>
-          <i v-else class="pi pi-user text-3xl"></i>
+        <div class="relative h-20 w-20 shrink-0">
+          <UserAvatar :avatar="profile.avatar" :name="profile.name" class="h-20 w-20 text-3xl ring-4 ring-accent-soft/50" />
+          <button
+            type="button"
+            class="absolute -bottom-2 -right-2 flex h-11 w-11 items-center justify-center rounded-full border-4 border-surface bg-primary text-on-primary shadow-soft transition-colors hover:bg-primary-hover disabled:opacity-50"
+            aria-label="Edit avatar"
+            title="Edit avatar"
+            aria-haspopup="dialog"
+            :disabled="saving || avatarSaving || loggingOut"
+            @click="avatarDialogVisible = true"
+          >
+            <i class="pi pi-pencil text-sm" aria-hidden="true"></i>
+          </button>
         </div>
         <div class="min-w-0 flex-1">
           <h2 id="profile-name-heading" class="break-words text-2xl font-semibold" dir="auto">
@@ -116,7 +123,7 @@
       </div>
     </section>
 
-    <div class="grid items-start gap-6 xl:grid-cols-2">
+    <div class="grid items-stretch gap-6 xl:grid-cols-2">
       <div class="flex min-w-0 flex-col gap-6">
         <section
           class="rounded-xl2 content-panel border p-5 sm:p-7"
@@ -153,17 +160,25 @@
             {{ profile.today_progress.is_completed ? 'Your daily practice is done. Enjoy the progress you’ve made!' : 'Every word counts. Keep going toward your daily goal.' }}
           </p>
         </section>
-        <WordUniverseCard :stats="profile.garden_stats" />
+        <WordUniverseCard :stats="profile.garden_stats" class="xl:flex-1" />
       </div>
       <ProfileSettingsForm
-        :settings="profile"
-        :saving="saving"
-        :error="saveError"
-        :saved="saved"
+        v-if="settings"
+        :settings="settings"
+        :saving="saving || avatarSaving"
         @save="saveProfile"
       />
     </div>
   </div>
+
+  <AvatarDialog
+    v-if="profile"
+    v-model:visible="avatarDialogVisible"
+    :avatar="profile.avatar"
+    :name="profile.name"
+    :saving="avatarSaving"
+    @save="saveAvatar"
+  />
 
   <div class="mt-6 flex justify-end border-t border-line-soft pt-5">
     <Button
@@ -172,7 +187,7 @@
       severity="secondary"
       outlined
       :loading="loggingOut"
-      :disabled="loggingOut || saving"
+      :disabled="loggingOut || saving || avatarSaving"
       class="w-full sm:w-auto"
       @click="handleLogout"
     />
@@ -184,31 +199,44 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "primevue/button";
 import Skeleton from "primevue/skeleton";
+import { useToast } from "primevue/usetoast";
 import WordUniverseCard from "@/components/WordUniverseCard.vue";
 import ProfileSettingsForm from "@/components/ProfileSettingsForm.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
+import AvatarDialog from "@/components/AvatarDialog.vue";
 import { api, apiErrorMessage } from "@/services/api";
 import { useAuthStore } from "@/stores/auth";
 import { useWordsStore } from "@/stores/words";
-import type { ProfileSettings, UserProfile } from "@/types";
+import type { StudySettings, UserProfile } from "@/types";
+import type { AvatarId } from "@/constants/avatars";
 
 const auth = useAuthStore();
 const router = useRouter();
 const words = useWordsStore();
+const toast = useToast();
 const loggingOut = ref(false);
 const profile = ref<UserProfile | null>(null);
+const settings = ref<StudySettings | null>(null);
+const avatarDialogVisible = ref(false);
+const avatarSaving = ref(false);
 const loading = ref(true);
 const loadError = ref("");
 const saving = ref(false);
-const saveError = ref("");
-const saved = ref(false);
-const initial = computed(() => Array.from(profile.value?.name.trim() ?? "")[0]?.toLocaleUpperCase() ?? "");
 const progressPercentage = computed(() => Math.min(100, Math.max(0, profile.value?.today_progress.percentage ?? 0)));
 const planetProgressPercentage = computed(() => Math.min(100, Math.max(0, profile.value?.level_progress?.percentage ?? 0)));
 
-function applyProfile(updated: UserProfile) {
+function applyProfile(updated: UserProfile, syncSettings = false) {
   profile.value = updated;
+  if (syncSettings) {
+    settings.value = {
+      name: updated.name,
+      daily_goal: updated.daily_goal,
+      preferred_study_time: updated.preferred_study_time,
+      notifications_enabled: updated.notifications_enabled,
+    };
+  }
   if (auth.user) {
-    auth.user = { ...auth.user, name: updated.name, email: updated.email, streak_count: updated.streak_count };
+    auth.user = { ...auth.user, name: updated.name, email: updated.email, streak_count: updated.streak_count, avatar: updated.avatar };
     auth.streakError = false;
   }
 }
@@ -217,7 +245,7 @@ async function loadProfile() {
   loading.value = true;
   loadError.value = "";
   try {
-    applyProfile(await api.getProfile());
+    applyProfile(await api.getProfile(), true);
   } catch (error) {
     loadError.value = apiErrorMessage(error);
   } finally {
@@ -225,23 +253,35 @@ async function loadProfile() {
   }
 }
 
-async function saveProfile(settings: ProfileSettings) {
-  if (saving.value || loggingOut.value) return;
+async function saveProfile(updatedSettings: StudySettings) {
+  if (saving.value || avatarSaving.value || loggingOut.value) return;
   saving.value = true;
-  saveError.value = "";
-  saved.value = false;
   try {
-    applyProfile(await api.updateProfile(settings));
-    saved.value = true;
+    applyProfile(await api.updateProfile(updatedSettings), true);
+    toast.add({ severity: "success", summary: "Changes saved", detail: "Your profile settings have been updated.", life: 3500 });
   } catch (error) {
-    saveError.value = apiErrorMessage(error);
+    toast.add({ severity: "error", summary: "Couldn’t save changes", detail: `${apiErrorMessage(error)} Your edits are kept. Please try again.`, life: 6000 });
   } finally {
     saving.value = false;
   }
 }
 
+async function saveAvatar(avatar: AvatarId | "") {
+  if (avatarSaving.value || saving.value || loggingOut.value) return;
+  avatarSaving.value = true;
+  try {
+    applyProfile(await api.updateProfile({ avatar }));
+    avatarDialogVisible.value = false;
+    toast.add({ severity: "success", summary: "Avatar updated", life: 3500 });
+  } catch (error) {
+    toast.add({ severity: "error", summary: "Couldn’t save avatar", detail: `${apiErrorMessage(error)} Please try again.`, life: 6000 });
+  } finally {
+    avatarSaving.value = false;
+  }
+}
+
 async function handleLogout() {
-  if (loggingOut.value || saving.value) return;
+  if (loggingOut.value || saving.value || avatarSaving.value) return;
   loggingOut.value = true;
   try {
     await auth.logout();

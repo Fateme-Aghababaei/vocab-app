@@ -1,3 +1,5 @@
+import type { AvatarId } from "@/constants/avatars";
+
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 
 export interface Word {
@@ -60,9 +62,11 @@ export interface User {
   email: string;
   name: string;
   streak_count?: number;
+  avatar?: AvatarId | "";
 }
 
 export interface UserProfile extends User {
+  avatar: AvatarId | "";
   streak_count: number;
   max_streak: number;
   streak_freeze_count: number;
@@ -93,8 +97,10 @@ export interface UserProfile extends User {
 
 export type ProfileSettings = Pick<
   UserProfile,
-  "name" | "daily_goal" | "preferred_study_time" | "notifications_enabled"
+  "name" | "avatar" | "daily_goal" | "preferred_study_time" | "notifications_enabled"
 >;
+
+export type StudySettings = Omit<ProfileSettings, "avatar">;
 
 export interface AuthResponse {
   token: string;
