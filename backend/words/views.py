@@ -127,12 +127,18 @@ class WordViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="recommendations")
     def recommendations(self, request):
         from collections import Counter
-        import random
+
         user_words_qs = Word.objects.filter(user=request.user)
-        existing_words = set(user_words_qs.values_list("word", flat=True))
+        existing_words = set(w.lower() for w in user_words_qs.values_list("word", flat=True))
+
+        candidates = GlobalWord.objects.exclude(word__in=existing_words)
+
+        if not candidates.exists():
+            return Response([], status=status.HTTP_200_OK)
+
         categories_list = []
         for cats in user_words_qs.values_list("categories", flat=True):
-            if cats:
+            if isinstance(cats, list):
                 categories_list.extend(cats)
 
         top_category = None
@@ -141,20 +147,25 @@ class WordViewSet(viewsets.ModelViewSet):
 
         difficulties = list(user_words_qs.values_list("difficulty", flat=True))
         user_difficulty = Counter(difficulties).most_common(1)[0][0] if difficulties else "intermediate"
-        candidates = GlobalWord.objects.exclude(word__in=existing_words)
-        preferred = candidates.filter(difficulty=user_difficulty)
+
+        recommended_list = []
+
         if top_category:
-            preferred = preferred.filter(categories__icontains=top_category)
+            preferred = candidates.filter(
+                difficulty=user_difficulty,
+                categories__icontains=top_category
+            ).order_by('?')[:4]
+            recommended_list.extend(list(preferred))
 
-        results = list(preferred[:15])
+        target_count = 4
+        needed = target_count - len(recommended_list)
 
-        if len(results) < 6:
-            fallback = list(candidates.exclude(id__in=[w.id for w in results])[:15])
-            results.extend(fallback)
+        if needed > 0:
+            already_picked_ids = [w.id for w in recommended_list]
+            random_fill = candidates.exclude(id__in=already_picked_ids).order_by('?')[:needed]
+            recommended_list.extend(list(random_fill))
 
-        recommended = random.sample(results, min(len(results), 4)) if results else []
-
-        serializer = GlobalWordSerializer(recommended, many=True)
+        serializer = GlobalWordSerializer(recommended_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"], url_path="claim")
@@ -165,12 +176,13 @@ class WordViewSet(viewsets.ModelViewSet):
         if not global_word:
             return Response({"detail": "Word not found in dictionary."}, status=status.HTTP_404_NOT_FOUND)
 
-        if Word.objects.filter(user=request.user, word__iexact=global_word.word).exists():
-            return Response({"detail": "You already have this word."}, status=status.HTTP_400_BAD_REQUEST)
+        w_clean = global_word.word.strip().lower()
+        if Word.objects.filter(user=request.user, word=w_clean).exists():
+            return Response({"detail": "You already have this word in your deck."}, status=status.HTTP_400_BAD_REQUEST)
 
         word = Word.objects.create(
             user=request.user,
-            word=global_word.word,
+            word=w_clean,
             definition=global_word.definition,
             examples=global_word.examples,
             usage_notes=global_word.usage_notes,
@@ -178,19 +190,23 @@ class WordViewSet(viewsets.ModelViewSet):
             difficulty=global_word.difficulty,
             categories=global_word.categories,
         )
-
         return Response(WordSerializer(word).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="generate")
     def generate(self, request):
+        from .dictionary_service import fetch_from_open_apis
+
         serializer = GenerateWordRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        raw_word = serializer.validated_data["word"].strip()
+        raw_word = serializer.validated_data["word"].strip().lower()
 
         cached = GlobalWord.objects.filter(word__iexact=raw_word).first()
         if cached:
             return Response({
                 "word": cached.word,
+                "original_input": raw_word,
+                "is_corrected": False,
+                "pronunciation": getattr(cached, "pronunciation", ""),
                 "definition": cached.definition,
                 "examples": cached.examples,
                 "usage_notes": cached.usage_notes,
@@ -200,25 +216,37 @@ class WordViewSet(viewsets.ModelViewSet):
                 "source": "database",
             }, status=status.HTTP_200_OK)
 
+        dict_info = fetch_from_open_apis(raw_word)
+        if dict_info:
+            GlobalWord.objects.get_or_create(
+                word=dict_info["word"].lower(),
+                defaults={
+                    "definition": dict_info.get("definition", ""),
+                    "examples": dict_info.get("examples", []),
+                    "usage_notes": dict_info.get("usage_notes", ""),
+                    "collocations": dict_info.get("collocations", []),
+                    "difficulty": dict_info.get("difficulty", "intermediate"),
+                    "categories": dict_info.get("categories", []),
+                }
+            )
+            return Response(dict_info, status=status.HTTP_200_OK)
+
         try:
             info = generate_word_info(raw_word)
         except GeminiError as exc:
             return Response({"detail": str(exc)}, status=exc.status_code)
 
-        try:
-            GlobalWord.objects.get_or_create(
-                word=info["word"].lower(),
-                defaults={
-                    "definition": info.get("definition", ""),
-                    "examples": info.get("examples", []),
-                    "usage_notes": info.get("usage_notes", ""),
-                    "collocations": info.get("collocations", []),
-                    "difficulty": info.get("difficulty", "intermediate"),
-                    "categories": info.get("categories", []),
-                }
-            )
-        except Exception:
-            pass
+        GlobalWord.objects.get_or_create(
+            word=info["word"].lower(),
+            defaults={
+                "definition": info.get("definition", ""),
+                "examples": info.get("examples", []),
+                "usage_notes": info.get("usage_notes", ""),
+                "collocations": info.get("collocations", []),
+                "difficulty": info.get("difficulty", "intermediate"),
+                "categories": info.get("categories", []),
+            }
+        )
 
         info["source"] = "ai"
         return Response(info, status=status.HTTP_200_OK)
@@ -258,6 +286,9 @@ class WordViewSet(viewsets.ModelViewSet):
             interval_after=result["interval_after"],
         )
 
+        if hasattr(request.user, "profile"):
+            request.user.profile.update_streak_and_xp(earned_xp=5)
+
         return Response(self.get_serializer(word).data)
 
     @action(detail=False, methods=["get"], url_path="categories")
@@ -268,6 +299,42 @@ class WordViewSet(viewsets.ModelViewSet):
         merged = sorted(used | set(SUGGESTED_CATEGORIES))
         return Response(merged)
 
+    @action(detail=False, methods=["get"], url_path="due")
+    def due(self, request):
+        today = timezone.localdate()
+        queryset = self.get_queryset().filter(
+            is_mastered=False,
+            next_review_date__lte=today
+        ).order_by("ease_factor", "next_review_date", "-created_at")
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="master")
+    def mark_as_mastered(self, request, pk=None):
+        from .srs import master_word
+
+        word = self.get_object()
+        master_word(word)
+
+        if hasattr(request.user, "profile"):
+            request.user.profile.update_streak_and_xp(earned_xp=25)
+
+        return Response(self.get_serializer(word).data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="pop-quiz")
+    def pop_quiz(self, request):
+        import random
+        user_words = list(self.get_queryset().all())
+        if len(user_words) < 4:
+            return Response(
+                {"detail": "You need at least 4 words in your deck for a pop quiz."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        quiz_sample = random.sample(user_words, min(len(user_words), 8))
+        serializer = self.get_serializer(quiz_sample, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class StatsView(APIView):
     def get(self, request):
