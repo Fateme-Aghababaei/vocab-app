@@ -7,6 +7,22 @@ from django.utils import timezone
 
 
 class UserProfile(models.Model):
+    XP_PER_LEVEL = 500
+    PLANET_LEVELS = (
+        "Mercury", "Venus", "Earth", "Mars",
+        "Jupiter", "Saturn", "Uranus", "Neptune",
+    )
+    AVATAR_CHOICES = (
+        ("Nilo", "The Wise Alien — Nilo"),
+        ("Mobi", "The Friendly Robot — Mobi"),
+        ("Lumi", "The Stargazer Spirit — Lumi"),
+        ("Rico", "The Comet Trickster — Rico"),
+        ("Selu", "The Moon Guardian — Selu"),
+        ("Orbi", "The Planet Keeper — Orbi"),
+        ("Veya", "The Cosmic Wanderer — Veya"),
+        ("Soli", "The Star Forger — Soli"),
+    )
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
     )
@@ -18,6 +34,7 @@ class UserProfile(models.Model):
     daily_goal = models.PositiveIntegerField(default=10)
     preferred_study_time = models.TimeField(null=True, blank=True)
     notifications_enabled = models.BooleanField(default=True)
+    avatar = models.CharField(max_length=32, choices=AVATAR_CHOICES, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -26,20 +43,22 @@ class UserProfile(models.Model):
 
     @property
     def level(self) -> int:
-        return (self.xp // 500) + 1
+        return (self.xp // self.XP_PER_LEVEL) + 1
 
     @property
     def level_title(self) -> str:
-        lvl = self.level
-        if lvl == 1:
-            return "Seedling"
-        elif lvl <= 3:
-            return "Word Explorer"
-        elif lvl <= 6:
-            return "Vocab Builder"
-        elif lvl <= 10:
-            return "Lexicon Master"
-        return "Grandmaster"
+        return self.PLANET_LEVELS[min(self.level, len(self.PLANET_LEVELS)) - 1]
+
+    @property
+    def level_progress(self) -> dict:
+        if self.level >= len(self.PLANET_LEVELS):
+            return {"next_planet": None, "xp_remaining": 0, "percentage": 100}
+        xp_into_level = self.xp % self.XP_PER_LEVEL
+        return {
+            "next_planet": self.PLANET_LEVELS[self.level],
+            "xp_remaining": self.XP_PER_LEVEL - xp_into_level,
+            "percentage": int(xp_into_level / self.XP_PER_LEVEL * 100),
+        }
 
     def update_streak_and_xp(self, earned_xp: int = 10):
         today = timezone.localdate()

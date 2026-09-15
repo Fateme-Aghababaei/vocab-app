@@ -3,13 +3,14 @@
     v-if="!isInstalled"
     type="button"
     :disabled="installing"
-    class="glass-control inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50"
+    class="glass-control inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-line py-2.5 text-sm font-semibold text-secondary transition-colors hover:border-line-strong hover:text-copy disabled:cursor-wait disabled:opacity-50"
+    :class="compact ? 'min-w-11 px-3 sm:px-5' : 'px-5'"
     aria-label="Install app"
     title="Install app"
     @click="install"
   >
     <i :class="installing ? 'pi pi-spinner pi-spin' : 'pi pi-download'" aria-hidden="true"></i>
-    <span class="whitespace-nowrap">Install app</span>
+    <span class="whitespace-nowrap" :class="{ 'hidden sm:inline': compact }">Install app</span>
   </button>
   <Dialog
     v-model:visible="showHelp"
@@ -27,6 +28,8 @@
 import { ref } from "vue";
 import Dialog from "primevue/dialog";
 import { installApp, installPrompt, isInstalled } from "@/services/pwa";
+
+defineProps<{ compact?: boolean }>();
 
 const installing = ref(false);
 const showHelp = ref(false);
