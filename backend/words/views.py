@@ -299,6 +299,42 @@ class WordViewSet(viewsets.ModelViewSet):
         merged = sorted(used | set(SUGGESTED_CATEGORIES))
         return Response(merged)
 
+    @action(detail=False, methods=["get"], url_path="due")
+    def due(self, request):
+        today = timezone.localdate()
+        queryset = self.get_queryset().filter(
+            is_mastered=False,
+            next_review_date__lte=today
+        ).order_by("ease_factor", "next_review_date", "-created_at")
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="master")
+    def mark_as_mastered(self, request, pk=None):
+        from .srs import master_word
+
+        word = self.get_object()
+        master_word(word)
+
+        if hasattr(request.user, "profile"):
+            request.user.profile.update_streak_and_xp(earned_xp=25)
+
+        return Response(self.get_serializer(word).data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="pop-quiz")
+    def pop_quiz(self, request):
+        import random
+        user_words = list(self.get_queryset().all())
+        if len(user_words) < 4:
+            return Response(
+                {"detail": "You need at least 4 words in your deck for a pop quiz."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        quiz_sample = random.sample(user_words, min(len(user_words), 8))
+        serializer = self.get_serializer(quiz_sample, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class StatsView(APIView):
     def get(self, request):

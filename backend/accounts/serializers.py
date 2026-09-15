@@ -2,9 +2,11 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from .models import UserProfile
+from words.models import Word, ReviewLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,12 +52,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["streak_count", "max_streak", "streak_freeze_count", "xp"]
 
     def get_garden_stats(self, obj):
-        from backend.words.models import Word
-
         words = Word.objects.filter(user=obj.user)
-        sprouts = words.filter(repetitions__lte=1).count()
-        growing = words.filter(repetitions__in=[2, 3]).count()
-        mature = words.filter(repetitions__gte=4).count()
+        mature = words.filter(Q(repetitions__gte=4) | Q(is_mastered=True)).count()
+        growing = words.filter(repetitions__in=[2, 3], is_mastered=False).count()
+        sprouts = words.filter(repetitions__lte=1, is_mastered=False).count()
 
         return {
             "sprouts": sprouts,
@@ -65,8 +65,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         }
 
     def get_today_progress(self, obj):
-        from backend.words.models import ReviewLog
-
         today = timezone.localdate()
         reviewed_today = ReviewLog.objects.filter(
             word__user=obj.user, reviewed_at__date=today

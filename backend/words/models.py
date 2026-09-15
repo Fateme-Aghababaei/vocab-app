@@ -40,7 +40,7 @@ class Word(models.Model):
         max_length=20, choices=Difficulty.choices, default=Difficulty.INTERMEDIATE
     )
     categories = models.JSONField(default=list, blank=True)  # list[str]
-
+    is_mastered = models.BooleanField(default=False, db_index=True)
     repetitions = models.PositiveIntegerField(default=0)
     ease_factor = models.FloatField(default=2.5)
     interval_days = models.FloatField(default=0)
@@ -66,6 +66,16 @@ class Word(models.Model):
     @property
     def is_new(self):
         return self.repetitions == 0
+
+    @property
+    def is_due(self):
+        if self.is_mastered:
+            return False
+        return self.next_review_date <= timezone.localdate()
+
+    @property
+    def is_new(self):
+        return self.repetitions == 0 and not self.is_mastered
 
     def save(self, *args, **kwargs):
         if self.word:

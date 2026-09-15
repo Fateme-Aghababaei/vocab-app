@@ -56,6 +56,7 @@ class WordSerializer(serializers.ModelSerializer):
             "updated_at",
             "is_due",
             "is_new",
+            "is_mastered",
         ]
         read_only_fields = [
             "repetitions",
@@ -65,6 +66,7 @@ class WordSerializer(serializers.ModelSerializer):
             "last_reviewed_at",
             "created_at",
             "updated_at",
+            "is_mastered", 
         ]
 
     def validate(self, attrs):
