@@ -59,7 +59,42 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  streak_count?: number;
 }
+
+export interface UserProfile extends User {
+  streak_count: number;
+  max_streak: number;
+  streak_freeze_count: number;
+  xp: number;
+  level: number;
+  level_title: string;
+  level_progress?: {
+    next_planet: string | null;
+    xp_remaining: number;
+    percentage: number;
+  };
+  daily_goal: number;
+  preferred_study_time: string | null;
+  notifications_enabled: boolean;
+  garden_stats: {
+    sprouts: number;
+    growing: number;
+    mature: number;
+    total_words: number;
+  };
+  today_progress: {
+    reviewed_today: number;
+    goal: number;
+    is_completed: boolean;
+    percentage: number;
+  };
+}
+
+export type ProfileSettings = Pick<
+  UserProfile,
+  "name" | "daily_goal" | "preferred_study_time" | "notifications_enabled"
+>;
 
 export interface AuthResponse {
   token: string;

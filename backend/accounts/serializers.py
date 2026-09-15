@@ -28,6 +28,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="user.first_name", required=False, allow_blank=True)
     level = serializers.ReadOnlyField()
     level_title = serializers.ReadOnlyField()
+    level_progress = serializers.ReadOnlyField()
     garden_stats = serializers.SerializerMethodField()
     today_progress = serializers.SerializerMethodField()
 
@@ -43,6 +44,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "xp",
             "level",
             "level_title",
+            "level_progress",
             "daily_goal",
             "preferred_study_time",
             "notifications_enabled",

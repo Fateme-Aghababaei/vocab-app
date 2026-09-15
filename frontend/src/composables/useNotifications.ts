@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { api } from "@/services/api";
 
 export interface DueWordItem {
   word: string;
@@ -36,6 +37,7 @@ export function useNotifications() {
         await registration.showNotification(title, defaultOptions);
         return;
       } catch {
+        // Fall back to a page notification if the service worker cannot show it.
       }
     }
 
@@ -49,6 +51,14 @@ export function useNotifications() {
     const lastNotified = localStorage.getItem("vocab_last_notification_date");
 
     if (lastNotified === todayStr) return;
+
+    try {
+      const profile = await api.getProfile();
+      if (!profile.notifications_enabled) return;
+    } catch {
+      // Skip automatic reminders when the account preference cannot be checked.
+      return;
+    }
 
     const count = dueWords.length;
     const sampleWord = dueWords[0].word;

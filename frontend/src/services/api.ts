@@ -3,9 +3,11 @@ import type {
   AuthResponse,
   GeneratedWordInfo,
   NewWordPayload,
+  ProfileSettings,
   ReviewQuality,
   Stats,
   User,
+  UserProfile,
   Word,
 } from "@/types";
 import { clearToken, getToken } from "@/services/authStorage";
@@ -69,6 +71,22 @@ export const api = {
 
   async me(): Promise<User> {
     const { data } = await client.get("/auth/me/");
+    return data;
+  },
+
+  async getProfile(): Promise<UserProfile> {
+    const { data } = await client.get<UserProfile>("/auth/profile/");
+    return data;
+  },
+
+  async updateProfile(settings: ProfileSettings): Promise<UserProfile> {
+    const { name, daily_goal, preferred_study_time, notifications_enabled } = settings;
+    const { data } = await client.patch<UserProfile>("/auth/profile/", {
+      name,
+      daily_goal,
+      preferred_study_time,
+      notifications_enabled,
+    });
     return data;
   },
 
