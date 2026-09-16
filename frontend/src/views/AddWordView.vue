@@ -25,23 +25,31 @@
       </div>
 
       <div v-if="activeTab === 'single'" class="flex flex-col gap-6">
-        <section class="rounded-xl2 content-panel border p-5 flex flex-col sm:flex-row gap-3">
-          <InputText
-            v-model="wordInput"
-            placeholder="e.g. serendipity, call it a day..."
-            class="flex-1 text-base"
-            @keyup.enter="handleGenerate"
-          />
-          <button
-            type="button"
-            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            :disabled="!wordInput.trim() || generating"
-            @click="handleGenerate"
-          >
-            <i v-if="generating" class="pi pi-spin pi-spinner text-sm"></i>
-            <i v-else class="pi pi-sparkles text-sm"></i>
-            <span>Generate with AI</span>
-          </button>
+        <section class="rounded-xl2 content-panel border p-5 flex flex-col gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <InputText
+              id="word-search"
+              v-model="wordInput"
+              aria-label="Word or phrase"
+              aria-describedby="word-search-help"
+              placeholder="e.g. serendipity, call it a day..."
+              class="flex-1 text-base"
+              @keyup.enter="handleGenerate"
+            />
+            <button
+              type="button"
+              class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              :disabled="!wordInput.trim() || generating"
+              @click="handleGenerate"
+            >
+              <i v-if="generating" class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
+              <i v-else class="pi pi-sparkles text-sm" aria-hidden="true"></i>
+              <span>Generate with AI</span>
+            </button>
+          </div>
+          <p id="word-search-help" class="text-xs text-quiet">
+            Explore a word’s meaning and examples, then save it for practice.
+          </p>
         </section>
 
         <section v-if="form.word" class="rounded-xl2 content-panel border p-6 flex flex-col gap-5">
@@ -61,15 +69,20 @@
 
       <div v-else class="flex flex-col gap-6">
         <section class="rounded-xl2 content-panel border p-5 flex flex-col gap-4">
-          <label class="font-medium text-sm text-copy">
+          <label for="extract-text" class="font-medium text-sm text-copy">
             Paste an article snippet, email, tweet, or book passage:
           </label>
           <Textarea
+            id="extract-text"
             v-model="rawText"
+            aria-describedby="extract-text-help"
             rows="5"
             placeholder="Paste your English text here... (e.g. 'The team had to pivot quickly because the bottleneck was impeding our scalability...')"
             class="w-full text-sm leading-relaxed p-3"
           />
+          <p id="extract-text-help" class="text-xs text-quiet">
+            Use at least 15 characters. We’ll find words you can choose to save.
+          </p>
           <div class="flex justify-between items-center">
             <span class="text-xs text-faint">{{ rawText.length }} characters</span>
             <button
@@ -78,13 +91,27 @@
               :disabled="rawText.trim().length < 15 || extracting"
               @click="handleExtract"
             >
-              <i v-if="extracting" class="pi pi-spin pi-spinner text-sm"></i>
-              <i v-else class="pi pi-sparkles text-sm"></i>
+              <i v-if="extracting" class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
+              <i v-else class="pi pi-sparkles text-sm" aria-hidden="true"></i>
               <span>{{ extracting ? "Analyzing with AI..." : "Extract Vocabulary" }}</span>
             </button>
           </div>
         </section>
 
+        <StatePanel
+          v-if="extracted && !extractedItems.length"
+          title="No new stars in this passage"
+          description="Try a longer passage, or choose a word you’d like to explore on its own."
+          action-label="Try another passage"
+          @action="focusInput('extract-text')"
+        />
+        <StatePanel
+          v-else-if="allAlreadySaved"
+          title="These stars are already in your universe."
+          description="Every word we found is already in your library. Revisit them, or explore a different passage."
+          action-label="Browse your library"
+          to="/library"
+        />
         <section v-if="extractedItems.length" class="flex flex-col gap-4">
           <div class="flex items-center justify-between">
             <h2 class="font-display font-semibold text-lg text-heading">
@@ -101,6 +128,9 @@
               <span>Add {{ selectedCount() }} Selected to Library</span>
             </button>
           </div>
+          <p v-if="!allAlreadySaved && selectedCount() === 0" class="text-sm text-quiet" role="status">
+            Which words spark your curiosity? Select a word to add it to your library.
+          </p>
 
           <div class="grid gap-3">
             <div
@@ -151,7 +181,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
+import StatePanel from "@/components/StatePanel.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import InputText from "primevue/inputtext";
@@ -207,15 +238,19 @@ async function handleGenerate() {
     });
     toast.add({ severity: "success", summary: "Ready to save", detail: `Generated definition for "${info.word}"`, life: 2000 });
   } catch (e) {
-    Object.assign(form, emptyPayload(w));
-    toast.add({ severity: "error", summary: "Couldn't generate", detail: apiErrorMessage(e), life: 4000 });
+    if (!form.word) Object.assign(form, emptyPayload(w));
+    toast.add({ severity: "error", summary: "Couldn't generate this word", detail: `${apiErrorMessage(e)} Your draft is kept. Try again, or add the details yourself.`, life: 5000 });
   } finally {
     generating.value = false;
   }
 }
 
 async function handleSaveSingle() {
-  if (!form.word || !form.definition) return;
+  if (saving.value) return;
+  if (!form.word.trim() || !form.definition.trim()) {
+    toast.add({ severity: "warn", summary: "Give your word a meaning", detail: "Add a word and a definition before saving it to your library.", life: 4000 });
+    return;
+  }
   saving.value = true;
   try {
     await store.createWord(form);
@@ -231,19 +266,28 @@ async function handleSaveSingle() {
 const rawText = ref("");
 const extracting = ref(false);
 const savingBatch = ref(false);
+const extracted = ref(false);
 const extractedItems = ref<any[]>([]);
 const selectedItems = ref<Record<string, boolean>>({});
+const allAlreadySaved = computed(() => extractedItems.value.length > 0 && extractedItems.value.every((item) => item.already_in_library));
+
+function focusInput(id: string) {
+  document.getElementById(id)?.focus();
+}
 
 async function handleExtract() {
+  if (extracting.value) return;
   if (!rawText.value.trim() || rawText.value.trim().length < 15) {
     toast.add({ severity: "warn", summary: "Too short", detail: "Please paste a longer text excerpt.", life: 3000 });
     return;
   }
   extracting.value = true;
+  extracted.value = false;
   extractedItems.value = [];
   try {
     const items = await api.extractWordsFromText(rawText.value);
     extractedItems.value = items;
+    extracted.value = true;
     const selected: Record<string, boolean> = {};
     items.forEach((item) => {
       if (!item.already_in_library) {
@@ -251,9 +295,9 @@ async function handleExtract() {
       }
     });
     selectedItems.value = selected;
-    toast.add({ severity: "success", summary: "Extracted!", detail: `Found ${items.length} key vocabulary items!`, life: 3000 });
+    if (items.length) toast.add({ severity: "success", summary: "New discoveries", detail: `Found ${items.length} words to explore.`, life: 3000 });
   } catch (e) {
-    toast.add({ severity: "error", summary: "Extraction failed", detail: apiErrorMessage(e), life: 4000 });
+    toast.add({ severity: "error", summary: "Couldn't extract words", detail: `${apiErrorMessage(e)} Your text has been kept, so you can try again.`, life: 5000 });
   } finally {
     extracting.value = false;
   }

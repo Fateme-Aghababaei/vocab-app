@@ -125,6 +125,11 @@ export const api = {
     await client.delete(`/words/${id}/`);
   },
 
+  async masterWord(id: number): Promise<Word> {
+    const { data } = await client.post<Word>(`/words/${id}/master/`);
+    return data;
+  },
+
   async submitReview(id: number, quality: ReviewQuality): Promise<Word> {
     const { data } = await client.post(`/words/${id}/review/`, { quality });
     return data;

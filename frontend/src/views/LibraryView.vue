@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <section class="library-toolbar glass-panel rounded-xl2 border px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+    <section class="library-toolbar glass-panel rounded-xl2 border px-4 sm:px-5 py-4 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-center">
       <IconField class="w-full sm:max-w-xs">
         <InputIcon class="pi pi-search pointer-events-none" aria-hidden="true" />
         <InputText
@@ -40,20 +40,35 @@
       </button>
     </section>
 
-    <p class="text-xs text-faint -mt-2">
+    <p v-if="!store.loading && !searchPending && !store.error" class="text-xs text-faint -mt-2">
       {{ resultCountLabel }}
     </p>
 
-    <section v-if="store.words.length" class="flex flex-col gap-3">
+    <p v-if="store.categoriesError" class="text-sm text-quiet" role="alert">
+      {{ store.categoriesError }}
+      <button class="min-h-11 px-2 font-medium text-accent" @click="store.fetchCategories()">
+        Try again
+      </button>
+    </p>
+    <StatePanel v-if="store.loading || searchPending" kind="loading" title="Gathering your words…" />
+    <StatePanel
+      v-else-if="store.error"
+      kind="error"
+      title="Your library is taking a little longer"
+      :description="store.error"
+      action-label="Try again"
+      @action="refresh"
+    />
+    <section v-else-if="visibleWords.length" class="flex flex-col gap-3">
       <div
-        v-for="w in store.words"
+        v-for="w in visibleWords"
         :key="w.id"
-        class="library-row rounded-xl2 content-panel border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:border-accent-line transition-colors cursor-pointer"
+        class="library-row rounded-xl2 content-panel border px-5 py-4 flex flex-col xl:flex-row xl:items-center gap-3 xl:gap-5 hover:border-accent-line transition-colors cursor-pointer"
         @click="openEdit(w)"
       >
-        <div class="flex items-center gap-2 sm:w-48 shrink-0">
+        <div class="flex items-center gap-2 xl:w-48 shrink-0">
           <span
-            v-if="w.is_due"
+            v-if="w.is_due && !w.is_mastered"
             class="w-2 h-2 rounded-full bg-warning shrink-0"
             title="Due for review"
           ></span>
@@ -69,28 +84,35 @@
             {{ c }}
           </CategoryChip>
         </div>
-        <button
-          type="button"
-          class="text-faint hover:text-accent transition-colors shrink-0"
-          aria-label="Delete word"
-          @click.stop="confirmDelete(w)"
-        >
-          <i class="pi pi-trash"></i>
-        </button>
+        <div class="flex items-center gap-1 shrink-0" @click.stop>
+          <MasteryAction :word="w" />
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full text-faint transition-colors hover:bg-accent-soft hover:text-accent"
+            aria-label="Delete word"
+            title="Delete word"
+            @click="confirmDelete(w)"
+          >
+            <i class="pi pi-trash" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
     </section>
 
-    <div v-else class="rounded-xl2 content-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
-      <p class="font-display text-xl font-semibold text-heading">
-        No words match yet
-      </p>
-      <p class="text-quiet text-sm max-w-sm">
-        Try clearing your filters, or
-        <router-link to="/add" class="text-accent font-medium">
-          add a new word
-        </router-link>.
-      </p>
-    </div>
+    <StatePanel
+      v-else-if="hasFilters"
+      title="No words in this corner yet"
+      description="Try another search, or clear your filters to explore the rest of your library."
+      action-label="Clear filters"
+      @action="clearFilters"
+    />
+    <StatePanel
+      v-else
+      title="Your universe starts with one word."
+      description="Save a word you’re curious about. We’ll help it stick."
+      action-label="Add your first word"
+      to="/add"
+    />
 
     <Dialog
       :visible="!!editing"
@@ -123,7 +145,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import StatePanel from "@/components/StatePanel.vue";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputText from "primevue/inputtext";
@@ -135,6 +158,7 @@ import DifficultyBadge from "@/components/DifficultyBadge.vue";
 import CategoryChip from "@/components/CategoryChip.vue";
 import WordForm from "@/components/WordForm.vue";
 import SpeakButton from "@/components/SpeakButton.vue";
+import MasteryAction from "@/components/MasteryAction.vue";
 import { useWordsStore } from "@/stores/words";
 import { apiErrorMessage } from "@/services/api";
 import type { Difficulty, NewWordPayload, Word } from "@/types";
@@ -147,6 +171,16 @@ const search = ref("");
 const categoryFilter = ref<string | null>(null);
 const difficultyFilter = ref<Difficulty | null>(null);
 const dueOnly = ref(false);
+const visibleWords = computed(() => dueOnly.value ? store.words.filter((word) => !word.is_mastered) : store.words);
+const searchPending = ref(false);
+const hasFilters = computed(() => !!(search.value || categoryFilter.value || difficultyFilter.value || dueOnly.value));
+
+function clearFilters() {
+  search.value = "";
+  categoryFilter.value = null;
+  difficultyFilter.value = null;
+  dueOnly.value = false;
+}
 
 const difficultyOptions: { label: string; value: Difficulty }[] = [
   { label: "Beginner", value: "beginner" },
@@ -166,8 +200,13 @@ async function refresh() {
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
 watch(search, () => {
   clearTimeout(debounceHandle);
-  debounceHandle = setTimeout(refresh, 300);
+  searchPending.value = true;
+  debounceHandle = setTimeout(() => {
+    searchPending.value = false;
+    void refresh();
+  }, 300);
 });
+onUnmounted(() => clearTimeout(debounceHandle));
 watch([categoryFilter, difficultyFilter, dueOnly], refresh);
 
 onMounted(async () => {
@@ -241,7 +280,7 @@ function confirmDelete(word: Word) {
 }
 
 const resultCountLabel = computed(() => {
-  const n = store.words.length;
+  const n = visibleWords.value.length;
   return n === 1 ? "1 word" : `${n} words`;
 });
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <section v-if="store.recommendations && store.recommendations.length > 0" class="min-w-0 flex flex-col gap-3">
+  <section class="min-w-0 flex flex-col gap-3">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 class="font-display font-semibold text-lg text-heading flex flex-wrap items-center gap-2">
@@ -14,14 +14,31 @@
       <button
         type="button"
         class="shrink-0 py-2 text-xs font-semibold text-accent hover:text-accent-strong flex items-center gap-1 transition-colors"
+        :disabled="store.recommendationsLoading"
         @click="store.fetchRecommendations"
       >
-        <i class="pi pi-refresh text-xs"></i>
+        <i class="pi pi-refresh text-xs" aria-hidden="true"></i>
         <span>Refresh</span>
       </button>
     </div>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
+    <StatePanel v-if="store.recommendationsLoading" kind="loading" title="Looking for your next discovery…" />
+    <StatePanel
+      v-else-if="store.recommendationsError"
+      kind="error"
+      title="Suggestions are taking a little longer"
+      :description="store.recommendationsError"
+      action-label="Try again"
+      @action="store.fetchRecommendations()"
+    />
+    <StatePanel
+      v-else-if="!store.recommendations.length"
+      title="Your next discovery can be your own"
+      description="No suggestions right now. Bring a word from something you’ve read, watched, or heard."
+      action-label="Add a word"
+      to="/add"
+    />
+    <div v-else class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
       <div
         v-for="rec in (store.recommendations as RecommendedWord[])"
         :key="rec.id"
@@ -71,6 +88,7 @@ import { useToast } from "primevue/usetoast";
 import DifficultyBadge from "@/components/DifficultyBadge.vue";
 import CategoryChip from "@/components/CategoryChip.vue";
 import SpeakButton from "@/components/SpeakButton.vue";
+import StatePanel from "@/components/StatePanel.vue";
 import type { Difficulty } from "@/types";
 
 interface RecommendedWord {
