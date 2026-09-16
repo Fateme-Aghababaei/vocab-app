@@ -41,6 +41,12 @@ const router = createRouter({
       meta: { title: "Library", description: "Browse, search, and fine-tune everything you’ve saved." },
     },
     {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/ProfileView.vue"),
+      meta: { title: "Your profile", description: "Explore your word universe and make your practice your own." },
+    },
+    {
       path: "/add",
       name: "add-word",
       component: () => import("@/views/AddWordView.vue"),
