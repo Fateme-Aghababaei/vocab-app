@@ -66,10 +66,12 @@
 import { computed, onMounted, ref } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useWordsStore } from "@/stores/words";
+import { useAuthStore } from "@/stores/auth";
 import FlashCard from "@/components/FlashCard.vue";
 import type { ReviewQuality } from "@/types";
 
 const store = useWordsStore();
+const auth = useAuthStore();
 const toast = useToast();
 
 const loading = ref(true);
@@ -99,6 +101,7 @@ async function handleRate(quality: ReviewQuality) {
     await store.reviewWord(word.id, quality);
     reviewedCount.value += 1;
     flipped.value = false;
+    void auth.refreshStreak();
   } catch {
     toast.add({
       severity: "error",

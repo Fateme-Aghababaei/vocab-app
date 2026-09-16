@@ -1,6 +1,6 @@
 <template>
   <div class="app-backdrop min-h-dvh text-body">
-    <Toast position="top-right" />
+    <Toast position="top-right" :breakpoints="{ '640px': { width: 'calc(100% - 2rem)', right: '1rem', left: '1rem' } }" />
     <ConfirmDialog />
 
     <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -19,7 +19,7 @@
 
         <nav aria-label="Main navigation" class="flex flex-col gap-1">
           <router-link
-            v-for="item in navItems"
+            v-for="item in sidebarNavItems"
             :key="item.name"
             :to="item.to"
             :aria-current="isActive(item.name) ? 'page' : undefined"
@@ -49,8 +49,15 @@
           <p class="px-2 text-xs text-faint leading-relaxed">
             Save a word once, review it forever&nbsp;&mdash; a little every day.
           </p>
-          <div class="flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2.5">
-            <div class="min-w-0">
+          <router-link
+            to="/profile"
+            :aria-current="isActive('profile') ? 'page' : undefined"
+            class="flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2.5 transition-colors hover:bg-subtle"
+            :class="{ 'bg-accent-soft border-accent-line': isActive('profile') }"
+            aria-label="Your profile"
+          >
+            <UserAvatar :avatar="auth.user?.avatar" :name="auth.user?.name" class="h-9 w-9 text-sm" />
+            <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-body truncate">
                 {{ auth.user?.name }}
               </p>
@@ -58,16 +65,8 @@
                 {{ auth.user?.email }}
               </p>
             </div>
-            <button
-              type="button"
-              class="shrink-0 text-faint hover:text-accent transition-colors p-1.5"
-              aria-label="Log out"
-              title="Log out"
-              @click="handleLogout"
-            >
-              <i class="pi pi-sign-out"></i>
-            </button>
-          </div>
+            <i class="pi pi-chevron-right shrink-0 text-xs text-faint" aria-hidden="true"></i>
+          </router-link>
         </div>
       </aside>
 
@@ -78,17 +77,6 @@
           <div class="flex min-w-0 items-center gap-2">
             <img src="/memento.svg" alt="" class="app-logo h-7 w-7 shrink-0 object-contain md:hidden" />
             <span class="font-display text-base font-semibold text-heading md:hidden">Memento</span>
-          </div>
-          <div class="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              class="header-action md:hidden"
-              aria-label="Log out"
-              title="Log out"
-              @click="handleLogout"
-            >
-              <i class="pi pi-sign-out" aria-hidden="true"></i>
-            </button>
           </div>
         </header>
         <div class="app-content flex flex-1 flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(5.5rem+env(safe-area-inset-top))] md:pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-2">
@@ -137,8 +125,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import HeaderActions from "@/components/HeaderActions.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
 import AppFooter from "@/components/AppFooter.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -146,7 +135,6 @@ import { useWordsStore } from "@/stores/words";
 import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
-const router = useRouter();
 const store = useWordsStore();
 const auth = useAuthStore();
 
@@ -155,7 +143,9 @@ const navItems = [
   { name: "review", label: "Review", icon: "pi pi-bolt", to: "/review" },
   { name: "library", label: "Library", icon: "pi pi-book", to: "/library" },
   { name: "add-word", label: "Add word", icon: "pi pi-plus", to: "/add" },
+  { name: "profile", label: "Profile", icon: "pi pi-user", to: "/profile" },
 ];
+const sidebarNavItems = navItems.filter((item) => item.name !== "profile");
 
 const isActive = (name: string) => route.name === name;
 const dueBadge = computed(() => store.dueCount);
@@ -173,9 +163,4 @@ onMounted(() => {
   if (auth.isAuthenticated) store.fetchDueWords();
 });
 
-async function handleLogout() {
-  await auth.logout();
-  store.$reset();
-  router.push("/login");
-}
 </script>
