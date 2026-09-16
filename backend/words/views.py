@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.views import APIView
 from .gemini_service import generate_word_info, extract_vocabulary_from_text, GeminiError
 from .models import Word, ReviewLog, GlobalWord, SUGGESTED_CATEGORIES
@@ -31,18 +32,24 @@ class WordFilter(django_filters.FilterSet):
     def filter_due(self, queryset, name, value):
         today = timezone.localdate()
         if value:
-            return queryset.filter(next_review_date__lte=today)
+            return queryset.filter(next_review_date__lte=today, is_mastered=False)
         return queryset.filter(next_review_date__gt=today)
 
 
+class LibraryPagination(LimitOffsetPagination):
+    default_limit = 25
+    max_limit = 100
+
+
 class WordViewSet(viewsets.ModelViewSet):
+    pagination_class = LibraryPagination
     serializer_class = WordSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter]
     filterset_class = WordFilter
     search_fields = ["word", "definition"]
 
     def get_queryset(self):
-        return Word.objects.filter(user=self.request.user)
+        return Word.objects.filter(user=self.request.user).order_by("-created_at", "-id")
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

@@ -5,6 +5,7 @@ import type { NewWordPayload, ReviewQuality, Stats, Word } from "@/types";
 export const useWordsStore = defineStore("words", {
   state: () => ({
     words: [] as Word[],
+    wordsTotal: 0,
     dueWords: [] as Word[],
     stats: null as Stats | null,
     categories: [] as string[],
@@ -33,7 +34,8 @@ export const useWordsStore = defineStore("words", {
       try {
         const words = await api.listWords(filters);
         if (request === this.wordsRequest) {
-          this.words = words.map((word) => this.masteredIds.includes(word.id)
+          this.wordsTotal = words.count;
+          this.words = words.results.map((word) => this.masteredIds.includes(word.id)
             ? { ...word, is_mastered: true, is_due: false, is_new: false }
             : word);
         }

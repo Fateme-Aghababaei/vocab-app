@@ -85,7 +85,7 @@
           </CategoryChip>
         </div>
         <div class="flex items-center gap-1 shrink-0" @click.stop>
-          <MasteryAction :word="w" />
+          <MasteryAction :word="w" @mastered="refresh" />
           <button
             type="button"
             class="inline-flex h-10 w-10 items-center justify-center rounded-full text-faint transition-colors hover:bg-accent-soft hover:text-accent"
@@ -113,6 +113,26 @@
       action-label="Add your first word"
       to="/add"
     />
+
+    <nav v-if="store.wordsTotal > pageSize" aria-label="Library pagination" class="flex flex-wrap items-center justify-center gap-4">
+      <button
+        type="button"
+        class="glass-control rounded-full border border-line px-4 py-2 text-sm disabled:opacity-50"
+        :disabled="page === 0 || store.loading || searchPending"
+        @click="changePage(page - 1)"
+      >
+        Previous
+      </button>
+      <span class="text-sm text-quiet" aria-live="polite">Page {{ page + 1 }} of {{ pageCount }}</span>
+      <button
+        type="button"
+        class="glass-control rounded-full border border-line px-4 py-2 text-sm disabled:opacity-50"
+        :disabled="page + 1 >= pageCount || store.loading || searchPending"
+        @click="changePage(page + 1)"
+      >
+        Next
+      </button>
+    </nav>
 
     <Dialog
       :visible="!!editing"
@@ -167,6 +187,9 @@ const store = useWordsStore();
 const toast = useToast();
 const confirm = useConfirm();
 
+const pageSize = 25;
+const page = ref(0);
+const pageCount = computed(() => Math.max(1, Math.ceil(store.wordsTotal / pageSize)));
 const search = ref("");
 const categoryFilter = ref<string | null>(null);
 const difficultyFilter = ref<Difficulty | null>(null);
@@ -189,25 +212,48 @@ const difficultyOptions: { label: string; value: Difficulty }[] = [
 ];
 
 async function refresh() {
+  const requestedPage = page.value;
   await store.fetchWords({
+    limit: pageSize,
+    offset: requestedPage * pageSize,
     search: search.value || undefined,
     category: categoryFilter.value || undefined,
     difficulty: difficultyFilter.value || undefined,
     due: dueOnly.value || undefined,
   });
+  if (!store.loading && !store.error && page.value === requestedPage && page.value >= pageCount.value) {
+    page.value = pageCount.value - 1;
+    await refresh();
+  }
+}
+
+function changePage(nextPage: number) {
+  page.value = nextPage;
+  void refresh();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
-watch(search, () => {
+watch([search, categoryFilter, difficultyFilter, dueOnly], (values, previous) => {
   clearTimeout(debounceHandle);
-  searchPending.value = true;
-  debounceHandle = setTimeout(() => {
-    searchPending.value = false;
+  page.value = 0;
+  // Invalidate an in-flight response as soon as the query changes.
+  store.wordsRequest++;
+  searchPending.value = values[0] !== previous[0];
+  if (searchPending.value) {
+    debounceHandle = setTimeout(() => {
+      searchPending.value = false;
+      void refresh();
+    }, 300);
+  } else {
     void refresh();
-  }, 300);
+  }
 });
-onUnmounted(() => clearTimeout(debounceHandle));
-watch([categoryFilter, difficultyFilter, dueOnly], refresh);
+onUnmounted(() => {
+  clearTimeout(debounceHandle);
+  store.wordsRequest++;
+  store.loading = false;
+});
 
 onMounted(async () => {
   await Promise.all([refresh(), store.fetchCategories()]);
@@ -271,6 +317,7 @@ function confirmDelete(word: Word) {
     accept: async () => {
       try {
         await store.deleteWord(word.id);
+        await refresh();
         toast.add({ severity: "success", summary: "Word deleted", life: 2000 });
       } catch (e) {
         toast.add({ severity: "error", summary: "Couldn't delete", detail: apiErrorMessage(e), life: 4000 });
@@ -280,7 +327,10 @@ function confirmDelete(word: Word) {
 }
 
 const resultCountLabel = computed(() => {
-  const n = visibleWords.value.length;
-  return n === 1 ? "1 word" : `${n} words`;
+  const n = store.wordsTotal;
+  if (!n) return "0 words";
+  const first = page.value * pageSize + 1;
+  const last = Math.min(first + pageSize - 1, n);
+  return `${first}–${last} of ${n} ${n === 1 ? "word" : "words"}`;
 });
 </script>

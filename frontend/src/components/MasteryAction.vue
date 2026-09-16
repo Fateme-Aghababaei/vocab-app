@@ -5,11 +5,11 @@
   </span>
   <button
     v-else
+    v-tooltip.top="busy ? 'Marking as mastered…' : 'Mark as mastered'"
     type="button"
     class="inline-flex h-10 w-10 items-center justify-center rounded-full text-faint transition-colors hover:bg-accent-soft hover:text-accent disabled:cursor-wait disabled:opacity-50"
     :disabled="busy"
     :aria-label="busy ? `Marking ${word.word} as mastered` : `Mark ${word.word} as mastered`"
-    v-tooltip.top="busy ? 'Marking as mastered…' : 'Mark as mastered'"
     @click.stop="confirmMastery"
   >
     <i :class="busy ? 'pi pi-spinner pi-spin' : 'pi pi-star'" aria-hidden="true"></i>
@@ -25,6 +25,7 @@ import { useAuthStore } from "@/stores/auth";
 import { apiErrorMessage } from "@/services/api";
 import type { Word } from "@/types";
 
+const emit = defineEmits<{ mastered: [] }>();
 const props = defineProps<{ word: Word }>();
 const store = useWordsStore();
 const auth = useAuthStore();
@@ -46,6 +47,7 @@ function confirmMastery() {
       try {
         const word = await store.masterWord(props.word.id);
         if (!word) return;
+        emit("mastered");
         void auth.refreshStreak();
         toast.add({ severity: "success", summary: "Word mastered", detail: `“${word.word}” will no longer appear in reviews.`, life: 3500 });
       } catch (error) {

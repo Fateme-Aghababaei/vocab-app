@@ -2,7 +2,12 @@ import json
 from unittest.mock import Mock, patch
 
 import requests
+from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, override_settings
+from django.utils import timezone
+from rest_framework.test import APITestCase
+
+from .models import Word
 
 from .gemini_service import GeminiError, generate_word_info
 
@@ -117,3 +122,49 @@ class GeminiServiceTests(SimpleTestCase):
                 post.return_value = self.success({"definition": "A greeting", "pronunciation": value})
                 with self.assertRaisesRegex(GeminiError, "pronunciation"):
                     generate_word_info("hello")
+
+
+class LibraryPaginationTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(username="library", password="test")
+        other = get_user_model().objects.create_user(username="other", password="test")
+        Word.objects.bulk_create([
+            Word(user=cls.user, word=f"word-{i:03}", definition="searchable",
+                 categories=["Travel"], difficulty="beginner")
+            for i in range(131)
+        ])
+        # A tie must still give repeatable page boundaries.
+        Word.objects.filter(user=cls.user).update(created_at=timezone.now())
+        Word.objects.create(user=other, word="private")
+
+    def setUp(self):
+        self.client.force_authenticate(self.user)
+
+    def test_pages_are_bounded_complete_and_private(self):
+        ids = []
+        for offset in range(0, 131, 25):
+            response = self.client.get("/api/words/", {"offset": offset})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["count"], 131)
+            self.assertLessEqual(len(response.data["results"]), 25)
+            ids.extend(w["id"] for w in response.data["results"])
+        self.assertEqual(len(set(ids)), 131)
+        self.assertEqual(ids, sorted(ids, reverse=True))
+
+    def test_limit_is_capped_and_empty_offset_preserves_count(self):
+        response = self.client.get("/api/words/", {"limit": 10000})
+        self.assertEqual(len(response.data["results"]), 100)
+        response = self.client.get("/api/words/", {"offset": 10000})
+        self.assertEqual(response.data["results"], [])
+        self.assertEqual(response.data["count"], 131)
+
+    def test_filters_apply_before_pagination_and_exclude_mastered_due_words(self):
+        Word.objects.filter(user=self.user, word="word-130").update(is_mastered=True)
+        response = self.client.get("/api/words/", {
+            "search": "word-1", "category": "Travel", "difficulty": "beginner", "due": "true",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 30)
+        self.assertEqual(len(response.data["results"]), 25)
+        self.assertTrue(all(not w["is_mastered"] for w in response.data["results"]))
