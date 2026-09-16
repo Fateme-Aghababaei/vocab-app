@@ -69,13 +69,17 @@
 
       <div v-else class="flex flex-col gap-6">
         <section class="rounded-xl2 content-panel border p-5 flex flex-col gap-4">
+          <p id="extract-vpn-notice" class="flex items-start gap-2 rounded-xl border border-warning-line bg-warning-soft px-4 py-3 text-sm text-warning-copy" role="note">
+            <i class="pi pi-info-circle mt-0.5 shrink-0 text-warning-icon" aria-hidden="true"></i>
+            <span>Turn on your VPN before using Learn From Anything.</span>
+          </p>
           <label for="extract-text" class="font-medium text-sm text-copy">
             Paste an article snippet, email, tweet, or book passage:
           </label>
           <Textarea
             id="extract-text"
             v-model="rawText"
-            aria-describedby="extract-text-help"
+            aria-describedby="extract-text-help extract-vpn-notice"
             rows="5"
             placeholder="Paste your English text here... (e.g. 'The team had to pivot quickly because the bottleneck was impeding our scalability...')"
             class="w-full text-sm leading-relaxed p-3"
