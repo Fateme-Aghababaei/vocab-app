@@ -14,7 +14,7 @@
       <button
         type="button"
         class="shrink-0 py-2 text-xs font-semibold text-accent hover:text-accent-strong flex items-center gap-1 transition-colors"
-        :disabled="store.recommendationsLoading"
+        :disabled="store.recommendationsLoading || addingId !== null"
         @click="store.fetchRecommendations"
       >
         <i class="pi pi-refresh text-xs" aria-hidden="true"></i>
@@ -28,15 +28,11 @@
       kind="error"
       title="Suggestions are taking a little longer"
       :description="store.recommendationsError"
-      action-label="Try again"
-      @action="store.fetchRecommendations()"
     />
     <StatePanel
       v-else-if="!store.recommendations.length"
-      title="Your next discovery can be your own"
-      description="No suggestions right now. Bring a word from something you’ve read, watched, or heard."
-      action-label="Add a word"
-      to="/add"
+      title="No new suggestions available"
+      description="There are no more new words to recommend right now."
     />
     <div v-else class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
       <div
@@ -69,7 +65,7 @@
         <button
           type="button"
           class="w-full rounded-full border border-line glass-control hover:bg-accent-soft hover:border-accent-line-strong text-copy hover:text-accent text-xs font-semibold py-2 transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
-          :disabled="addingId === rec.id"
+          :disabled="addingId !== null"
           @click="handleAdd(rec)"
         >
           <i v-if="addingId === rec.id" class="pi pi-spin pi-spinner text-xs"></i>
@@ -108,6 +104,7 @@ onMounted(() => {
 });
 
 const handleAdd = async (rec: RecommendedWord) => {
+  if (addingId.value !== null) return;
   addingId.value = rec.id;
   try {
     await store.claimRecommendation(rec.id);

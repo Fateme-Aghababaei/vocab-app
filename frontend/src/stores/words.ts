@@ -47,13 +47,14 @@ export const useWordsStore = defineStore("words", {
     },
 
     async fetchRecommendations() {
+      if (this.recommendationsLoading) return;
       this.recommendationsLoading = true;
       this.recommendationsError = "";
       try {
         const data = await api.getRecommendations();
         this.recommendations = data;
       } catch {
-        this.recommendationsError = "We couldn’t load your suggestions. Try again, or add a word of your own.";
+        this.recommendationsError = "We couldn’t load more suggestions right now.";
       } finally {
         this.recommendationsLoading = false;
       }
@@ -63,6 +64,9 @@ export const useWordsStore = defineStore("words", {
       const newWord = await api.claimRecommendation(id);
       this.recommendations = this.recommendations.filter((r) => r.id !== id);
       this.words.unshift(newWord);
+      if (!this.recommendations.length) {
+        void this.fetchRecommendations();
+      }
       await this.fetchStats();
       return newWord;
     },
