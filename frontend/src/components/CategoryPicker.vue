@@ -1,5 +1,8 @@
 <template>
   <div class="flex flex-col gap-3">
+    <p v-if="!suggestions.length && !modelValue.length" class="text-xs text-quiet">
+      Give your word a place to belong. Add a category, or leave it for later.
+    </p>
     <div class="flex flex-wrap gap-2">
       <button
         v-for="cat in suggestions"

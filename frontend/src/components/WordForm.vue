@@ -50,6 +50,7 @@
         multiline
         placeholder="A natural sentence using the word"
         add-label="Add example"
+        empty-message="A sentence gives a word a world to live in. Add an example when you’re ready."
       />
     </div>
 
@@ -70,7 +71,12 @@
 
     <div>
       <label class="block text-sm font-medium text-copy mb-1.5">Common collocations</label>
-      <ListEditor v-model="form.collocations" placeholder="e.g. deeply resilient" add-label="Add phrase" />
+      <ListEditor
+        v-model="form.collocations"
+        placeholder="e.g. deeply resilient"
+        add-label="Add phrase"
+        empty-message="Words have favourite companions. Add a common phrase to remember them together."
+      />
     </div>
 
     <div class="grid sm:grid-cols-2 gap-6">

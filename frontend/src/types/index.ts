@@ -21,6 +21,7 @@ export interface Word {
   updated_at: string;
   is_due: boolean;
   is_new: boolean;
+  is_mastered: boolean;
 }
 
 export interface GeneratedWordInfo {
@@ -46,6 +47,7 @@ export type NewWordPayload = Omit<
   | "updated_at"
   | "is_due"
   | "is_new"
+  | "is_mastered"
 >;
 
 export const REVIEW_QUALITY = {

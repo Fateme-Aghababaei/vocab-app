@@ -3,7 +3,7 @@
     <div class="mx-auto flex w-full max-w-xl flex-col gap-5">
       <div class="flex items-center justify-between gap-3">
         <p class="text-sm text-quiet">
-          {{ sessionTotal > 0 ? `${reviewedCount} of ${sessionTotal} reviewed` : "" }}
+          {{ sessionTotal > 0 ? `${reviewedCount} reviewed${masteredCount ? ` · ${masteredCount} mastered` : ''} · ${sessionTotal} total` : "" }}
         </p>
         <router-link to="/add" class="text-sm font-medium text-accent hover:text-accent-strong">
           + Add word
@@ -16,58 +16,51 @@
         ></div>
       </div>
 
-      <div v-if="loading" class="py-24 text-center text-faint">
-        Loading your review queue&hellip;
-      </div>
+      <StatePanel v-if="loading" kind="loading" title="Gathering your next discoveries…" />
+      <StatePanel
+        v-else-if="store.dueError || (!currentWord && store.statsError)"
+        kind="error"
+        title="Your practice is waiting for you"
+        :description="store.dueError || store.statsError"
+        action-label="Try again"
+        @action="loadReview"
+      />
 
       <FlashCard
         v-else-if="currentWord"
         :key="currentWord.id"
         :word="currentWord"
         :flipped="flipped"
+        :disabled="rating || store.masteringIds.includes(currentWord.id)"
         @flip="handleFlip"
         @rate="handleRate"
       />
 
-      <div v-else class="rounded-xl2 content-panel border px-8 py-16 text-center flex flex-col items-center gap-3">
-        <div class="w-14 h-14 rounded-full bg-warning-muted flex items-center justify-center text-warning-icon mb-1">
-          <i class="pi pi-check text-2xl"></i>
-        </div>
-        <h2 class="font-display text-xl font-semibold text-heading">
-          {{ sessionTotal > 0 ? "Nice work — you're all caught up" : "Nothing due right now" }}
-        </h2>
-        <p class="text-quiet text-sm max-w-sm">
-          {{
-            sessionTotal > 0
-              ? "You've reviewed every word that was due today. Come back tomorrow, or add more words to your list."
-              : "New and overdue words will show up here when it's time to review them."
-          }}
-        </p>
-        <div class="flex gap-3 mt-2">
-          <router-link
-            to="/add"
-            class="rounded-full glass-primary glass-control hover:bg-primary-hover text-on-primary text-sm font-semibold px-5 py-2.5 transition-colors"
-          >
-            Add a word
-          </router-link>
-          <router-link
-            to="/library"
-            class="rounded-full glass-control hover:bg-muted text-copy text-sm font-semibold px-5 py-2.5 transition-colors"
-          >
-            Browse library
-          </router-link>
-        </div>
-      </div>
+      <StatePanel
+        v-else
+        :title="sessionTotal > 0 ? 'A little practice, a brighter universe.' : store.stats?.total_words === 0 ? 'Your first review starts with a word.' : 'Your stars can rest for now.'"
+        :description="sessionTotal > 0 ? 'You’ve finished every word in this session. Enjoy the progress you’ve made, and come back for your next discovery.' : store.stats?.total_words === 0 ? 'Save a word you’d love to remember. We’ll have it ready for your first practice.' : 'Nothing is due right now. Your words will be here when it’s time to revisit them.'"
+        :action-label="store.stats?.total_words === 0 ? 'Add your first word' : 'Discover a new word'"
+        to="/add"
+      >
+        <router-link
+          to="/library"
+          class="rounded-full glass-control hover:bg-muted text-copy text-sm font-semibold px-5 py-2.5 transition-colors"
+        >
+          Browse library
+        </router-link>
+      </StatePanel>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useWordsStore } from "@/stores/words";
 import { useAuthStore } from "@/stores/auth";
 import FlashCard from "@/components/FlashCard.vue";
+import StatePanel from "@/components/StatePanel.vue";
 import type { ReviewQuality } from "@/types";
 
 const store = useWordsStore();
@@ -77,17 +70,24 @@ const toast = useToast();
 const loading = ref(true);
 const flipped = ref(false);
 const reviewedCount = ref(0);
+const sessionWordIds = ref<number[]>([]);
+const masteredCount = computed(() => sessionWordIds.value.filter((id) => store.masteredIds.includes(id)).length);
+const rating = ref(false);
 const sessionTotal = ref(0);
 
-onMounted(async () => {
-  await store.fetchDueWords();
+async function loadReview() {
+  loading.value = true;
+  await Promise.all([store.fetchDueWords(), store.fetchStats()]);
   sessionTotal.value = store.dueWords.length;
+  sessionWordIds.value = store.dueWords.map((word) => word.id);
   loading.value = false;
-});
+}
+onMounted(loadReview);
 
 const currentWord = computed(() => store.dueWords[0] ?? null);
+watch(() => currentWord.value?.id, () => { flipped.value = false; });
 const progressPct = computed(() =>
-  sessionTotal.value === 0 ? 0 : Math.round((reviewedCount.value / sessionTotal.value) * 100),
+  sessionTotal.value === 0 ? 0 : Math.round(((reviewedCount.value + masteredCount.value) / sessionTotal.value) * 100),
 );
 
 function handleFlip() {
@@ -95,7 +95,8 @@ function handleFlip() {
 }
 
 async function handleRate(quality: ReviewQuality) {
-  if (!currentWord.value) return;
+  if (!currentWord.value || rating.value || store.masteringIds.includes(currentWord.value.id)) return;
+  rating.value = true;
   const word = currentWord.value;
   try {
     await store.reviewWord(word.id, quality);
@@ -109,6 +110,9 @@ async function handleRate(quality: ReviewQuality) {
       detail: "Please try again.",
       life: 3500,
     });
+  } finally {
+    rating.value = false;
   }
 }
+
 </script>

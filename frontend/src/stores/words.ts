@@ -5,35 +5,58 @@ import type { NewWordPayload, ReviewQuality, Stats, Word } from "@/types";
 export const useWordsStore = defineStore("words", {
   state: () => ({
     words: [] as Word[],
+    wordsTotal: 0,
     dueWords: [] as Word[],
     stats: null as Stats | null,
     categories: [] as string[],
     loading: false,
     error: "" as string,
     recommendations: [] as any[],
+    wordsRequest: 0,
+    dueLoading: false,
+    dueError: "",
+    statsLoading: false,
+    statsError: "",
+    recommendationsLoading: false,
+    recommendationsError: "",
+    categoriesError: "",
+    masteringIds: [] as number[],
+    masteredIds: [] as number[],
   }),
   getters: {
     dueCount: (state) => state.dueWords.length,
   },
   actions: {
     async fetchWords(filters: WordFilters = {}) {
+      const request = ++this.wordsRequest;
       this.loading = true;
       this.error = "";
       try {
-        this.words = await api.listWords(filters);
+        const words = await api.listWords(filters);
+        if (request === this.wordsRequest) {
+          this.wordsTotal = words.count;
+          this.words = words.results.map((word) => this.masteredIds.includes(word.id)
+            ? { ...word, is_mastered: true, is_due: false, is_new: false }
+            : word);
+        }
       } catch {
-        this.error = "Couldn't load your words.";
+        if (request === this.wordsRequest) this.error = "We couldn’t load your words. Your library is still yours; try again in a moment.";
       } finally {
-        this.loading = false;
+        if (request === this.wordsRequest) this.loading = false;
       }
     },
 
     async fetchRecommendations() {
+      if (this.recommendationsLoading) return;
+      this.recommendationsLoading = true;
+      this.recommendationsError = "";
       try {
         const data = await api.getRecommendations();
         this.recommendations = data;
-      } catch (error) {
-        console.error("Failed to load recommendations", error);
+      } catch {
+        this.recommendationsError = "We couldn’t load more suggestions right now.";
+      } finally {
+        this.recommendationsLoading = false;
       }
     },
 
@@ -41,20 +64,44 @@ export const useWordsStore = defineStore("words", {
       const newWord = await api.claimRecommendation(id);
       this.recommendations = this.recommendations.filter((r) => r.id !== id);
       this.words.unshift(newWord);
+      if (!this.recommendations.length) {
+        void this.fetchRecommendations();
+      }
       await this.fetchStats();
       return newWord;
     },
 
     async fetchDueWords() {
-      this.dueWords = await api.getDueWords();
+      this.dueLoading = true;
+      this.dueError = "";
+      try {
+        this.dueWords = (await api.getDueWords()).filter((word) => !word.is_mastered && !this.masteredIds.includes(word.id));
+      } catch {
+        this.dueError = "We couldn’t load your review queue. Try again when you’re ready.";
+      } finally {
+        this.dueLoading = false;
+      }
     },
 
     async fetchStats() {
-      this.stats = await api.getStats();
+      this.statsLoading = true;
+      this.statsError = "";
+      try {
+        this.stats = await api.getStats();
+      } catch {
+        this.statsError = "We couldn’t load your progress. Try again in a moment.";
+      } finally {
+        this.statsLoading = false;
+      }
     },
 
     async fetchCategories() {
-      this.categories = await api.getCategories();
+      this.categoriesError = "";
+      try {
+        this.categories = await api.getCategories();
+      } catch {
+        this.categoriesError = "Category suggestions couldn’t load. You can still search or add your own category.";
+      }
     },
 
     async createWord(payload: NewWordPayload) {
@@ -74,6 +121,23 @@ export const useWordsStore = defineStore("words", {
       await api.deleteWord(id);
       this.words = this.words.filter((w) => w.id !== id);
       this.dueWords = this.dueWords.filter((w) => w.id !== id);
+    },
+
+    async masterWord(id: number) {
+      if (this.masteringIds.includes(id)) return;
+      if (this.masteredIds.includes(id)) return;
+      if (this.words.find((word) => word.id === id)?.is_mastered) return;
+      this.masteringIds.push(id);
+      try {
+        const updated = await api.masterWord(id);
+        this.masteredIds.push(id);
+        this.words = this.words.map((word) => word.id === id ? updated : word);
+        this.dueWords = this.dueWords.filter((word) => word.id !== id);
+        void this.fetchStats();
+        return updated;
+      } finally {
+        this.masteringIds = this.masteringIds.filter((wordId) => wordId !== id);
+      }
     },
 
     async reviewWord(id: number, quality: ReviewQuality) {

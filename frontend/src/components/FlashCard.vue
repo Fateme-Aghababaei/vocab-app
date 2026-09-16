@@ -114,6 +114,7 @@
         type="button"
         class="flex flex-col items-center justify-center gap-1 rounded-xl py-3 text-sm font-semibold transition-colors"
         :class="r.classes"
+        :disabled="disabled"
         @click="emit('rate', r.quality)"
       >
         {{ r.label }}
@@ -134,6 +135,7 @@ import { previewIntervals } from "@/utils/srsPreview";
 const props = defineProps<{
   word: Word;
   flipped: boolean;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{

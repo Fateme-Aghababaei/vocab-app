@@ -1,5 +1,8 @@
 <template>
   <div class="flex flex-col gap-2">
+    <p v-if="!modelValue.length && emptyMessage" class="text-xs text-quiet">
+      {{ emptyMessage }}
+    </p>
     <div v-for="(item, i) in modelValue" :key="i" class="flex items-start gap-2">
       <Textarea
         v-if="multiline"
@@ -48,8 +51,9 @@ const props = withDefaults(
     placeholder?: string;
     multiline?: boolean;
     addLabel?: string;
+    emptyMessage?: string;
   }>(),
-  { placeholder: "", multiline: false, addLabel: "Add" },
+  { placeholder: "", multiline: false, addLabel: "Add", emptyMessage: "" },
 );
 
 const emit = defineEmits<{ (e: "update:modelValue", value: string[]): void }>();

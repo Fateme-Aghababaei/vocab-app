@@ -43,6 +43,13 @@ export interface WordFilters {
   difficulty?: string;
   due?: boolean;
   search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface WordPage {
+  count: number;
+  results: Word[];
 }
 
 function toParams(filters: WordFilters = {}) {
@@ -51,6 +58,8 @@ function toParams(filters: WordFilters = {}) {
   if (filters.difficulty) params.difficulty = filters.difficulty;
   if (filters.due !== undefined) params.due = String(filters.due);
   if (filters.search) params.search = filters.search;
+  if (filters.limit !== undefined) params.limit = String(filters.limit);
+  if (filters.offset !== undefined) params.offset = String(filters.offset);
   return params;
 }
 
@@ -91,9 +100,9 @@ export const api = {
     return data;
   },
 
-  async listWords(filters: WordFilters = {}): Promise<Word[]> {
+  async listWords(filters: WordFilters = {}): Promise<WordPage> {
     const { data } = await client.get("/words/", { params: toParams(filters) });
-    return data.results ?? data;
+    return data;
   },
 
   async getDueWords(): Promise<Word[]> {
@@ -123,6 +132,11 @@ export const api = {
 
   async deleteWord(id: number): Promise<void> {
     await client.delete(`/words/${id}/`);
+  },
+
+  async masterWord(id: number): Promise<Word> {
+    const { data } = await client.post<Word>(`/words/${id}/master/`);
+    return data;
   },
 
   async submitReview(id: number, quality: ReviewQuality): Promise<Word> {
