@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useProgressStore } from "@/stores/progress";
+import { useAuthStore } from "@/stores/auth";
 import type {
   AuthResponse,
   GeneratedWordInfo,
@@ -26,7 +28,21 @@ client.interceptors.request.use((config) => {
 });
 
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const progress = response.data?.progress;
+    // Ignore responses belonging to a session that has since signed out or changed.
+    if (progress && getToken() && response.config.headers.Authorization === `Token ${getToken()}`) {
+      const auth = useAuthStore();
+      if (auth.user) {
+        if (progress.xp >= (auth.user.xp ?? 0)) {
+          Object.assign(auth.user, { xp: progress.xp, level: progress.level, streak_count: progress.streak_count });
+          auth.streakError = false;
+        }
+        useProgressStore().celebrate(progress);
+      }
+    }
+    return response;
+  },
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       clearToken();

@@ -2,6 +2,7 @@
   <div class="app-backdrop min-h-dvh text-body">
     <Toast position="top-right" :breakpoints="{ '640px': { width: 'calc(100% - 2rem)', right: '1rem', left: '1rem' } }" />
     <ConfirmDialog />
+    <ProgressFeedback />
 
     <div v-if="isPublicRoute" class="flex min-h-dvh flex-col pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <router-view />
@@ -129,6 +130,7 @@ import { useRoute } from "vue-router";
 import HeaderActions from "@/components/HeaderActions.vue";
 import UserAvatar from "@/components/UserAvatar.vue";
 import AppFooter from "@/components/AppFooter.vue";
+import ProgressFeedback from "@/components/ProgressFeedback.vue";
 import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useWordsStore } from "@/stores/words";
