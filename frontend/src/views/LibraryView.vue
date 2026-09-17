@@ -136,6 +136,7 @@
 
     <Dialog
       :visible="!!editing"
+      :closable="false"
       modal
       dismissable-mask
       :header="editing?.word ?? ''"
