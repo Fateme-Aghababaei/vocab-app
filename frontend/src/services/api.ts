@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useProgressStore } from "@/stores/progress";
+import { useAuthStore } from "@/stores/auth";
 import type {
   AuthResponse,
   GeneratedWordInfo,
@@ -26,7 +28,21 @@ client.interceptors.request.use((config) => {
 });
 
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const progress = response.data?.progress;
+    // Ignore responses belonging to a session that has since signed out or changed.
+    if (progress && getToken() && response.config.headers.Authorization === `Token ${getToken()}`) {
+      const auth = useAuthStore();
+      if (auth.user) {
+        if (progress.xp >= (auth.user.xp ?? 0)) {
+          Object.assign(auth.user, { xp: progress.xp, level: progress.level, streak_count: progress.streak_count });
+          auth.streakError = false;
+        }
+        useProgressStore().celebrate(progress);
+      }
+    }
+    return response;
+  },
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       clearToken();
@@ -64,9 +80,23 @@ function toParams(filters: WordFilters = {}) {
 }
 
 export const api = {
-  async register(email: string, password: string, name: string): Promise<AuthResponse> {
+  async register(email: string, password: string, name: string): Promise<{ email: string; detail: string }> {
     const { data } = await client.post("/auth/register/", { email, password, name });
     return data;
+  },
+
+  async verifyEmail(email: string, code: string): Promise<AuthResponse> {
+    const { data } = await client.post("/auth/verify-email/", { email, code });
+    return data;
+  },
+
+  async sendEmailCode(email: string, reset = false): Promise<{ detail: string }> {
+    const { data } = await client.post(reset ? "/auth/forgot-password/" : "/auth/resend-code/", { email });
+    return data;
+  },
+
+  async resetPassword(email: string, code: string, password: string): Promise<void> {
+    await client.post("/auth/reset-password/", { email, code, password });
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {

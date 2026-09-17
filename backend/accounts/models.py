@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -60,7 +60,24 @@ class UserProfile(models.Model):
             "percentage": int(xp_into_level / self.XP_PER_LEVEL * 100),
         }
 
+    @transaction.atomic
     def update_streak_and_xp(self, earned_xp: int = 10):
+        # Serialize awards so simultaneous actions cannot lose XP or repeat a streak event.
+        current = type(self).objects.select_for_update().get(pk=self.pk)
+        previous_streak, previous_level = current.streak_count, current.level
+        current._apply_streak_and_xp(earned_xp)
+        self.refresh_from_db()
+        return {
+            "xp_gained": earned_xp,
+            "xp": current.xp,
+            "streak_count": current.streak_count,
+            "streak_increased": current.streak_count > previous_streak,
+            "level": current.level,
+            "level_title": current.level_title,
+            "level_increased": current.level > previous_level,
+        }
+
+    def _apply_streak_and_xp(self, earned_xp: int):
         today = timezone.localdate()
         self.xp += earned_xp
 
@@ -91,3 +108,15 @@ def create_or_save_user_profile(sender, instance, created, **kwargs):
     else:
         if hasattr(instance, "profile"):
             instance.profile.save()
+
+
+class EmailCode(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    purpose = models.CharField(max_length=16, choices=[("signup", "Signup"), ("reset", "Password reset")])
+    code_hash = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    sent_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "purpose"], name="unique_user_email_code")]

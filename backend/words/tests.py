@@ -168,3 +168,65 @@ class LibraryPaginationTests(APITestCase):
         self.assertEqual(response.data["count"], 30)
         self.assertEqual(len(response.data["results"]), 25)
         self.assertTrue(all(not w["is_mastered"] for w in response.data["results"]))
+
+
+class ProgressFeedbackTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="progress")
+        self.client.force_authenticate(self.user)
+        self.word = Word.objects.create(user=self.user, word="moment", definition="A short time")
+
+    def test_first_review_and_same_day_review(self):
+        first = self.client.post(f"/api/words/{self.word.pk}/review/", {"quality": 2})
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(first.data["id"], self.word.pk)
+        self.assertTrue(first.data["progress"]["streak_increased"])
+        self.assertEqual(first.data["progress"]["xp_gained"], 5)
+        second = self.client.post(f"/api/words/{self.word.pk}/review/", {"quality": 2})
+        self.assertFalse(second.data["progress"]["streak_increased"])
+        self.assertFalse(second.data["progress"]["level_increased"])
+        self.assertEqual(second.data["progress"]["xp"], 10)
+
+    def test_master_reports_simultaneous_level_and_streak(self):
+        profile = self.user.profile
+        profile.xp = 475
+        profile.save()
+        response = self.client.post(f"/api/words/{self.word.pk}/master/")
+        self.assertEqual(response.status_code, 200)
+        award = response.data["progress"]
+        self.assertTrue(award["level_increased"])
+        self.assertTrue(award["streak_increased"])
+        self.assertEqual((award["xp_gained"], award["level"], award["level_title"]), (25, 2, "Venus"))
+        profile.refresh_from_db()
+        self.assertEqual(profile.xp, 500)
+
+    def test_invalid_review_does_not_award_progress(self):
+        response = self.client.post(f"/api/words/{self.word.pk}/review/", {"quality": 99})
+        self.assertEqual(response.status_code, 400)
+        self.assertNotIn("progress", response.data)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.xp, 0)
+
+    def test_stale_profile_instances_do_not_lose_awards(self):
+        from accounts.models import UserProfile
+        first = UserProfile.objects.get(user=self.user)
+        second = UserProfile.objects.get(user=self.user)
+        first.update_streak_and_xp(5)
+        award = second.update_streak_and_xp(25)
+        self.assertEqual(award["xp"], 30)
+        self.assertFalse(award["streak_increased"])
+
+    def test_freeze_and_expired_streak(self):
+        from datetime import timedelta
+        profile = self.user.profile
+        profile.streak_count = 4
+        profile.last_active_date = timezone.localdate() - timedelta(days=2)
+        profile.save()
+        award = profile.update_streak_and_xp(5)
+        self.assertTrue(award["streak_increased"])
+        self.assertEqual(profile.streak_freeze_count, 0)
+        profile.last_active_date = timezone.localdate() - timedelta(days=3)
+        profile.save()
+        award = profile.update_streak_and_xp(5)
+        self.assertFalse(award["streak_increased"])
+        self.assertEqual(award["streak_count"], 1)

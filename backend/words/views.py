@@ -293,10 +293,11 @@ class WordViewSet(viewsets.ModelViewSet):
             interval_after=result["interval_after"],
         )
 
+        data = dict(self.get_serializer(word).data)
         if hasattr(request.user, "profile"):
-            request.user.profile.update_streak_and_xp(earned_xp=5)
+            data["progress"] = request.user.profile.update_streak_and_xp(earned_xp=5)
 
-        return Response(self.get_serializer(word).data)
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="categories")
     def categories(self, request):
@@ -324,10 +325,11 @@ class WordViewSet(viewsets.ModelViewSet):
         word = self.get_object()
         master_word(word)
 
+        data = dict(self.get_serializer(word).data)
         if hasattr(request.user, "profile"):
-            request.user.profile.update_streak_and_xp(earned_xp=25)
+            data["progress"] = request.user.profile.update_streak_and_xp(earned_xp=25)
 
-        return Response(self.get_serializer(word).data, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="pop-quiz")
     def pop_quiz(self, request):

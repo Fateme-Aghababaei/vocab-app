@@ -48,6 +48,10 @@
           />
         </div>
 
+        <router-link to="/forgot-password" class="text-sm text-accent">
+          Forgot password?
+        </router-link>
+
         <button
           type="submit"
           class="mt-2 rounded-full glass-primary glass-control hover:bg-primary-hover disabled:bg-chart-neutral text-on-primary font-semibold py-2.5 transition-colors flex items-center justify-center gap-2"

@@ -64,6 +64,8 @@ export interface User {
   email: string;
   name: string;
   streak_count?: number;
+  xp?: number;
+  level?: number;
   avatar?: AvatarId | "";
 }
 
@@ -116,4 +118,14 @@ export interface Stats {
   reviewed_today: number;
   learned: number;
   by_difficulty: Record<Difficulty, number>;
+}
+
+export interface ProgressAward {
+  xp_gained: number;
+  xp: number;
+  streak_count: number;
+  streak_increased: boolean;
+  level: number;
+  level_title: string;
+  level_increased: boolean;
 }
