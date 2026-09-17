@@ -111,3 +111,100 @@ class AvatarSettingsTests(TestCase):
                 self.assertIn("avatar", serializer.errors)
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.avatar, "")
+
+
+from datetime import timedelta
+import re
+from unittest.mock import patch
+from django.core import mail
+from django.core.cache import cache
+from django.test import override_settings
+from django.urls import reverse
+from django.utils import timezone
+from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
+from .models import EmailCode
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class EmailAuthTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.client = APIClient()
+        self.email = "learner@example.com"
+        self.password = "Learning!Words42"
+
+    def post(self, action, **data):
+        return self.client.post(reverse("auth-" + action), data, format="json")
+
+    def signup(self):
+        return self.post("register", email=self.email, password=self.password, name="Learner")
+
+    def code(self):
+        return re.search(r"\b[0-9]{6}\b", mail.outbox[-1].body).group()
+
+    def test_signup_requires_verification_and_code_is_single_use(self):
+        response = self.signup()
+        self.assertEqual(response.status_code, 201)
+        self.assertNotIn("token", response.data)
+        user = User.objects.get(email=self.email)
+        self.assertFalse(user.is_active)
+        self.assertEqual(mail.outbox[0].to, [self.email])
+        code = self.code()
+        self.assertNotEqual(EmailCode.objects.get(user=user).code_hash, code)
+        self.assertEqual(self.post("login", email=self.email, password=self.password).status_code, 400)
+        response = self.post("verify-email", email=self.email.upper(), code=code)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("token", response.data)
+        self.assertEqual(self.post("verify-email", email=self.email, code=code).status_code, 400)
+        self.assertEqual(self.post("login", email=self.email, password=self.password).status_code, 200)
+
+    def test_expiry_attempt_limit_and_resend(self):
+        self.signup()
+        code = self.code()
+        for _ in range(5):
+            self.assertEqual(self.post("verify-email", email=self.email, code="000000" if code != "000000" else "111111").status_code, 400)
+        self.assertEqual(self.post("verify-email", email=self.email, code=code).status_code, 400)
+        self.post("resend-code", email=self.email)
+        self.assertEqual(len(mail.outbox), 1)
+        EmailCode.objects.update(sent_at=timezone.now() - timedelta(seconds=61))
+        self.post("resend-code", email=self.email)
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(EmailCode.objects.get().attempts, 0)
+        EmailCode.objects.update(expires_at=timezone.now() - timedelta(seconds=1))
+        self.assertEqual(self.post("verify-email", email=self.email, code=self.code()).status_code, 400)
+
+    def test_reset_revokes_token_and_changes_password(self):
+        user = User.objects.create_user(username=self.email, email=self.email, password=self.password)
+        token = Token.objects.create(user=user)
+        response = self.post("forgot-password", email=self.email)
+        self.assertEqual(response.status_code, 200)
+        code = self.code()
+        self.assertEqual(self.post("verify-email", email=self.email, code=code).status_code, 400)
+        self.assertEqual(self.post("reset-password", email=self.email, code=code, password="short").status_code, 400)
+        response = self.post("reset-password", email=self.email, code=code, password="Another!Password42")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Token.objects.filter(key=token.key).exists())
+        self.assertEqual(self.post("login", email=self.email, password=self.password).status_code, 400)
+        self.assertEqual(self.post("login", email=self.email, password="Another!Password42").status_code, 200)
+        self.assertEqual(self.post("reset-password", email=self.email, code=code, password=self.password).status_code, 400)
+
+    def test_reset_does_not_reveal_unknown_or_unverified_accounts(self):
+        self.signup()
+        unknown = self.post("forgot-password", email="unknown@example.com")
+        pending = self.post("forgot-password", email=self.email)
+        User.objects.create_user(username="active@example.com", email="active@example.com")
+        active = self.post("forgot-password", email="active@example.com")
+        self.assertEqual(unknown.data, pending.data)
+        self.assertEqual(unknown.data, active.data)
+        self.assertEqual(len(mail.outbox), 2)
+
+    @patch("accounts.email_codes.send_mail", side_effect=OSError("SMTP unavailable"))
+    def test_delivery_failure_rolls_back_signup(self, mocked):
+        self.assertEqual(self.signup().status_code, 503)
+        self.assertFalse(User.objects.filter(email=self.email).exists())
+
+    def test_requests_are_throttled(self):
+        for _ in range(20):
+            self.post("forgot-password", email="unknown@example.com")
+        self.assertEqual(self.post("forgot-password", email="unknown@example.com").status_code, 429)

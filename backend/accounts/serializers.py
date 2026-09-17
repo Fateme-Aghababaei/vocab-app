@@ -94,7 +94,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField(max_length=150, required=False, allow_blank=True)
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
 
     def validate_email(self, value):
         value = value.strip().lower()
@@ -113,6 +113,7 @@ class RegisterSerializer(serializers.Serializer):
             email=email,
             first_name=validated_data.get("name", "").strip(),
             password=validated_data["password"],
+            is_active=False,
         )
         return user
 
@@ -130,3 +131,22 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("This account is disabled.")
         attrs["user"] = user
         return attrs
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
+class VerifyCodeSerializer(EmailSerializer):
+    code = serializers.RegexField(r"^[0-9]{6}$", trim_whitespace=True)
+
+
+class ResetPasswordSerializer(VerifyCodeSerializer):
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value

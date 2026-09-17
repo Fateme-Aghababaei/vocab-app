@@ -54,8 +54,8 @@ export const useAuthStore = defineStore("auth", {
       this.streakError = false;
     },
 
-    async register(email: string, password: string, name: string) {
-      const { token, user } = await api.register(email, password, name);
+    async verifyEmail(email: string, code: string) {
+      const { token, user } = await api.verifyEmail(email, code);
       setToken(token);
       this.user = user;
       this.streakError = false;

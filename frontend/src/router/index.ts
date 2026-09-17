@@ -5,6 +5,19 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: "/verify-email",
+      name: "verify-email",
+      beforeEnter: (to) => typeof to.query.email === "string" && !!to.query.email.trim() ? true : { name: "signup" },
+      component: () => import("@/views/EmailCodeView.vue"),
+      meta: { public: true, title: "Confirm your email" },
+    },
+    {
+      path: "/forgot-password",
+      name: "forgot-password",
+      component: () => import("@/views/EmailCodeView.vue"),
+      meta: { public: true, title: "Reset password" },
+    },
+    {
       path: "/",
       name: "landing",
       component: () => import("@/views/LandingView.vue"),

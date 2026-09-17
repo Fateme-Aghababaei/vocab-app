@@ -91,3 +91,15 @@ def create_or_save_user_profile(sender, instance, created, **kwargs):
     else:
         if hasattr(instance, "profile"):
             instance.profile.save()
+
+
+class EmailCode(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    purpose = models.CharField(max_length=16, choices=[("signup", "Signup"), ("reset", "Password reset")])
+    code_hash = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    sent_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "purpose"], name="unique_user_email_code")]

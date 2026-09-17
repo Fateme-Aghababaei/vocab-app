@@ -64,9 +64,23 @@ function toParams(filters: WordFilters = {}) {
 }
 
 export const api = {
-  async register(email: string, password: string, name: string): Promise<AuthResponse> {
+  async register(email: string, password: string, name: string): Promise<{ email: string; detail: string }> {
     const { data } = await client.post("/auth/register/", { email, password, name });
     return data;
+  },
+
+  async verifyEmail(email: string, code: string): Promise<AuthResponse> {
+    const { data } = await client.post("/auth/verify-email/", { email, code });
+    return data;
+  },
+
+  async sendEmailCode(email: string, reset = false): Promise<{ detail: string }> {
+    const { data } = await client.post(reset ? "/auth/forgot-password/" : "/auth/resend-code/", { email });
+    return data;
+  },
+
+  async resetPassword(email: string, code: string, password: string): Promise<void> {
+    await client.post("/auth/reset-password/", { email, code, password });
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {

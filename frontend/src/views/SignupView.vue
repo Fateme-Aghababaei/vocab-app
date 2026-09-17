@@ -109,11 +109,9 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
-import { useAuthStore } from "@/stores/auth";
-import { apiErrorMessage } from "@/services/api";
+import { api, apiErrorMessage } from "@/services/api";
 
 const router = useRouter();
-const auth = useAuthStore();
 
 const name = ref("");
 const email = ref("");
@@ -127,7 +125,7 @@ const passwordsMismatch = computed(
 );
 
 const canSubmit = computed(
-  () => !!email.value && password.value.length >= 8 && !passwordsMismatch.value,
+  () => !!email.value && password.value.length >= 8 && password.value === confirmPassword.value,
 );
 
 async function handleSubmit() {
@@ -135,8 +133,8 @@ async function handleSubmit() {
   loading.value = true;
   error.value = "";
   try {
-    await auth.register(email.value, password.value, name.value);
-    router.push("/app");
+    const result = await api.register(email.value, password.value, name.value);
+    router.push({ name: "verify-email", query: { email: result.email } });
   } catch (e) {
     error.value = apiErrorMessage(e);
   } finally {
