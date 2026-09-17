@@ -4,3 +4,4 @@ django-cors-headers==4.3.1
 django-filter==24.2
 python-dotenv==1.0.1
 requests==2.32.3
+pywebpush

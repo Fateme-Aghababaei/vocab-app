@@ -120,3 +120,15 @@ class EmailCode(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "purpose"], name="unique_user_email_code")]
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="push_subscriptions", on_delete=models.CASCADE
+    )
+    endpoint = models.URLField(max_length=500, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Push sub for {self.user.email}"

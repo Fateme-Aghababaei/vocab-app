@@ -117,6 +117,7 @@ class WordViewSet(viewsets.ModelViewSet):
             word_obj = Word.objects.create(
                 user=request.user,
                 word=w_name,
+                pronunciation=item.get("pronunciation", ""),
                 definition=item.get("definition", ""),
                 examples=examples,
                 usage_notes=item.get("usage_notes", ""),
@@ -190,6 +191,7 @@ class WordViewSet(viewsets.ModelViewSet):
         word = Word.objects.create(
             user=request.user,
             word=w_clean,
+            pronunciation=global_word.pronunciation,
             definition=global_word.definition,
             examples=global_word.examples,
             usage_notes=global_word.usage_notes,
