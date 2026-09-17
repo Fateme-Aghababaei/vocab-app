@@ -84,7 +84,7 @@
             <header class="page-header mb-6">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <h1 class="text-2xl font-semibold">
-                  {{ route.meta.title }}
+                  {{ route.name === 'dashboard' ? dashboardGreeting : route.meta.title }}
                 </h1>
                 <HeaderActions />
               </div>
@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import HeaderActions from "@/components/HeaderActions.vue";
 import UserAvatar from "@/components/UserAvatar.vue";
@@ -137,6 +137,36 @@ import { useAuthStore } from "@/stores/auth";
 const route = useRoute();
 const store = useWordsStore();
 const auth = useAuthStore();
+
+const dashboardGreetings = [
+  "Good to see you",
+  "Welcome back",
+  "Nice to have you here",
+  "Ready when you are",
+  "Here’s where you left off",
+  "Back at it",
+  "Glad you’re here",
+  "Let’s see what’s new",
+  "Your space, your pace",
+  "Let’s make some progress",
+  "Everything’s ready for you",
+  "One step at a time",
+  "A fresh start",
+  "Let’s get things moving",
+  "Another day, another moment",
+  "Welcome to Memento",
+];
+const dashboardGreeting = ref("");
+
+watch(
+  () => route.name,
+  (name) => {
+    if (name === "dashboard") {
+      dashboardGreeting.value = dashboardGreetings[Math.floor(Math.random() * dashboardGreetings.length)]!;
+    }
+  },
+  { immediate: true },
+);
 
 const navItems = [
   { name: "dashboard", label: "Today", icon: "pi pi-home", to: "/app" },
