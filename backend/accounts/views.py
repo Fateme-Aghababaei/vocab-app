@@ -131,3 +131,33 @@ class ProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# در accounts/views.py:
+from django.conf import settings
+from .models import PushSubscription
+
+
+class VapidPublicKeyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"publicKey": settings.VAPID_PUBLIC_KEY})
+
+
+class PushSubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        endpoint = request.data.get("endpoint")
+        keys = request.data.get("keys", {})
+        p256dh = keys.get("p256dh")
+        auth = keys.get("auth")
+
+        if not endpoint or not p256dh or not auth:
+            return Response({"detail": "Invalid subscription payload"}, status=status.HTTP_400_BAD_REQUEST)
+
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={"user": request.user, "p256dh": p256dh, "auth": auth},
+        )
+        return Response({"status": "subscribed"}, status=status.HTTP_201_CREATED)

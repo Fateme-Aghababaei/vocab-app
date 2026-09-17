@@ -145,3 +145,10 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Memento <noreply@localhost>")
+# Web Push VAPID Settings
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+VAPID_ADMIN_EMAIL = os.getenv("VAPID_ADMIN_EMAIL", "mailto:admin@memento.app")
+
+# VAPID_PUBLIC_KEY=BFh3XrueI2grUP_EoYgPyn2l2v378FbG_34hamOGOADOCsbv1H4ehwyaL9pNpxOvyN4009uDZPtmI9F8mDehgio
+# VAPID_PRIVATE_KEY=c2JC-7lmCCT4CLGBkebe4FyVDc9QGkTDcj-GdKJAUyk

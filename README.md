@@ -12,12 +12,14 @@ Django REST Framework, SQLite, and Gemini in `backend/`.
 Start the backend:
 
 ```bash
+# Backend Setup
 cd backend
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate                            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env  # first setup only; keep existing settings
+cp .env.example .env                                 # Windows: copy .env.example .env (first setup only)
 python manage.py migrate
+python manage.py import_vocabulary --file=words.csv  # Seed initial vocabulary dictionary into database
 python manage.py runserver
 ```
 
